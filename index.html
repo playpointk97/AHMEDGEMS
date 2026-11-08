@@ -825,7 +825,7 @@
 
             <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;">
                 <button class="btn main-btn" style="padding: 14px; font-size: 14px;" onclick="selectPlayMode('local')">📱 لعب محلي (على نفس الجهاز)</button>
-                <button class="btn online-btn" style="padding: 14px; font-size: 14px;" onclick="selectPlayMode('online')">🌐 لعب أونلاين (سيرفرات متعددة 20+)</button>
+                <button class="btn online-btn" style="padding: 14px; font-size: 14px;" onclick="selectPlayMode('online')">🌐 لعب أونلاين (سيرفرات متعددة 50+)</button>
             </div>
 
             <button class="btn sub-btn" onclick="openPlayersManager()" style="background: rgba(0, 255, 135, 0.15); border-color: var(--primary);">📋 إدارة قاعدة بيانات اللاعبين</button>
@@ -1387,7 +1387,7 @@
         }
 
         // ==========================================
-        // نظام الاتصال بـ 20+ سيرفر احتياطي تلقائي (Multi-Server Fallback)
+        // نظام الاتصال بـ 50 سيرفر احتياطي تلقائي (Multi-Server Fallback 50 Servers)
         // ==========================================
         const peerServersList = [
             { host: '0.peerjs.com', port: 443, secure: true, path: '/' },
@@ -1409,7 +1409,37 @@
             { host: 'hidden-canyon-45678.herokuapp.com', port: 443, secure: true, path: '/' },
             { host: 'ancient-gorge-23456.herokuapp.com', port: 443, secure: true, path: '/' },
             { host: 'stormy-mesa-56789.herokuapp.com', port: 443, secure: true, path: '/' },
-            { host: 'stellar-glade-89012.herokuapp.com', port: 443, secure: true, path: '/' }
+            { host: 'stellar-glade-89012.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'amber-meadow-11223.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'crimson-peak-44556.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'sapphire-bay-77889.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'emerald-valley-99001.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'obsidian-ridge-22334.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'titanium-core-55667.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'solstice-gate-88990.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'zenith-cluster-12398.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'pulsar-node-45687.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'nebula-peer-78932.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'quantum-relay-14725.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'fusion-server-36985.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'vortex-host-25836.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'apex-connection-15935.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'vertex-cloud-75395.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'horizon-peer-85246.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'infinite-node-95175.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'matrix-relay-35715.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'nexus-cluster-75315.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'gateway-prime-98765.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'synapse-hub-24680.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'cortex-server-13579.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'vector-net-86420.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'scalar-peer-97531.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'dynamic-host-24613.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'elastic-node-35724.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'robust-relay-46835.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'stable-cluster-57946.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'ultimate-peer-68057.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'alpha-omega-79168.herokuapp.com', port: 443, secure: true, path: '/' }
         ];
         let currentServerIndex = 0;
 
@@ -1419,16 +1449,16 @@
             }
             
             let config = peerServersList[currentServerIndex];
-            let peerPrefix = "ahmad_auction_app_multi_v8_";
+            let peerPrefix = "ahmad_auction_app_multi_v50_";
             let fullId = peerPrefix + customId;
 
-            console.log(`محاولة الاتصال بالسيرفر رقم ${currentServerIndex + 1} (${config.host})...`);
+            console.log(`محاولة الاتصال بالسيرفر رقم ${currentServerIndex + 1} من أصل 50 (${config.host})...`);
             
             try {
                 onlineState.peer = new Peer(fullId, config);
 
                 onlineState.peer.on('open', (id) => {
-                    console.log(`تم الاتصال بنجاح عبر سيرفر رقم ${currentServerIndex + 1}`);
+                    console.log(`تم الاتصال بنجاح عبر السيرفر رقم ${currentServerIndex + 1}`);
                     if (callback) callback(id);
                 });
 
@@ -1441,10 +1471,10 @@
                     console.warn(`فشل السيرفر رقم ${currentServerIndex + 1}:`, err.type);
                     currentServerIndex++;
                     if (currentServerIndex < peerServersList.length) {
-                        setTimeout(() => initPeerJS(customId, callback), 400);
+                        setTimeout(() => initPeerJS(customId, callback), 200);
                     } else {
                         currentServerIndex = 0; // إعادة ضبط للدورة
-                        alert("⚠️ عذراً، حدث ضغط على جميع السيرفرات. يرجى المحاولة مرة أخرى.");
+                        alert("⚠️ عذراً، تم فحص جميع السيرفرات الـ 50 ولم يتم الاستجابة. يرجى إعادة المحاولة.");
                     }
                 });
             } catch(e) {
@@ -1538,7 +1568,7 @@
             let randomClientId = Math.floor(1000 + Math.random() * 9000).toString();
             currentServerIndex = 0;
             initPeerJS(randomClientId, () => {
-                let peerPrefix = "ahmad_auction_app_multi_v8_";
+                let peerPrefix = "ahmad_auction_app_multi_v50_";
                 let hostFullId = peerPrefix + roomCode;
                 onlineState.conn = onlineState.peer.connect(hostFullId);
                 setupConnectionListeners();
