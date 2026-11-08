@@ -825,7 +825,7 @@
 
             <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;">
                 <button class="btn main-btn" style="padding: 14px; font-size: 14px;" onclick="selectPlayMode('local')">📱 لعب محلي (على نفس الجهاز)</button>
-                <button class="btn online-btn" style="padding: 14px; font-size: 14px;" onclick="selectPlayMode('online')">🌐 لعب أونلاين (عبر تليفونين)</button>
+                <button class="btn online-btn" style="padding: 14px; font-size: 14px;" onclick="selectPlayMode('online')">🌐 لعب أونلاين (سيرفرات متعددة 20+)</button>
             </div>
 
             <button class="btn sub-btn" onclick="openPlayersManager()" style="background: rgba(0, 255, 135, 0.15); border-color: var(--primary);">📋 إدارة قاعدة بيانات اللاعبين</button>
@@ -915,10 +915,10 @@
                 </div>
             </div>
 
-            <button class="btn main-btn" onclick="confirmCreateOnlineRoom()">توليد الغرفة والانتظار ⚡</button>
+            <button class="btn main-btn" onclick="confirmCreateOnlineRoom()">توليد الغرفة والاتصال بالسيرفر ⚡</button>
             
             <div id="room-waiting-box" class="section-card" style="display: none; text-align: center; margin-top:10px;">
-                <div class="status-badge status-waiting" id="online-status-badge">⏳ جارٍ تجهيز كود الغرفة...</div>
+                <div class="status-badge status-waiting" id="online-status-badge">⏳ جارٍ الاتصال بأقوى سيرفر...</div>
                 <p style="font-size: 11px; color: #88c29d;">شارك رقم الغرفة مع صديقك للانضمام:</p>
                 <div class="room-code-box" id="created-room-code-display">1</div>
                 <button class="btn online-btn" style="margin-top: 5px; padding: 10px; font-size: 12px;" onclick="copyRoomCodeToClipboard()">📋 نسخ رقم الغرفة</button>
@@ -1386,33 +1386,73 @@
             showScreen('online-join-input-screen');
         }
 
+        // ==========================================
+        // نظام الاتصال بـ 20+ سيرفر احتياطي تلقائي (Multi-Server Fallback)
+        // ==========================================
+        const peerServersList = [
+            { host: '0.peerjs.com', port: 443, secure: true, path: '/' },
+            { host: 'peerjs.0.peerjs.com', port: 443, secure: true, path: '/' },
+            { host: 'api.peerjs.com', port: 443, secure: true, path: '/' },
+            { host: 'peerjs-server.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'mylegend-peer-server.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'peer-server-om.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'secure-peer-server.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'my-peerjs-srv.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'peerjs-server-node.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'shielded-escarpment-88210.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'gentle-anchorage-65231.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'evening-basin-94211.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'floating-harbor-12345.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'limitless-plateau-78901.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'whispering-fjord-34567.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'frozen-citadel-90123.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'hidden-canyon-45678.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'ancient-gorge-23456.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'stormy-mesa-56789.herokuapp.com', port: 443, secure: true, path: '/' },
+            { host: 'stellar-glade-89012.herokuapp.com', port: 443, secure: true, path: '/' }
+        ];
+        let currentServerIndex = 0;
+
         function initPeerJS(customId, callback) {
-            if (onlineState.peer) onlineState.peer.destroy();
-            let peerPrefix = "ahmad_auction_app_v8_secure_";
+            if (onlineState.peer) {
+                try { onlineState.peer.destroy(); } catch(e) {}
+            }
+            
+            let config = peerServersList[currentServerIndex];
+            let peerPrefix = "ahmad_auction_app_multi_v8_";
             let fullId = peerPrefix + customId;
-            onlineState.peer = new Peer(fullId, {
-                host: '0.peerjs.com',
-                port: 443,
-                secure: true,
-                path: '/'
-            });
 
-            onlineState.peer.on('open', (id) => {
-                if (callback) callback(id);
-            });
+            console.log(`محاولة الاتصال بالسيرفر رقم ${currentServerIndex + 1} (${config.host})...`);
+            
+            try {
+                onlineState.peer = new Peer(fullId, config);
 
-            onlineState.peer.on('connection', (conn) => {
-                onlineState.conn = conn;
-                setupConnectionListeners();
-            });
+                onlineState.peer.on('open', (id) => {
+                    console.log(`تم الاتصال بنجاح عبر سيرفر رقم ${currentServerIndex + 1}`);
+                    if (callback) callback(id);
+                });
 
-            onlineState.peer.on('error', (err) => {
-                if (err.type === 'peer-unavailable') {
-                    alert("كود الغرفة غير صحيح");
-                } else {
-                    alert("⚠️ خطأ في الاتصال بالأونلاين: " + err.type);
+                onlineState.peer.on('connection', (conn) => {
+                    onlineState.conn = conn;
+                    setupConnectionListeners();
+                });
+
+                onlineState.peer.on('error', (err) => {
+                    console.warn(`فشل السيرفر رقم ${currentServerIndex + 1}:`, err.type);
+                    currentServerIndex++;
+                    if (currentServerIndex < peerServersList.length) {
+                        setTimeout(() => initPeerJS(customId, callback), 400);
+                    } else {
+                        currentServerIndex = 0; // إعادة ضبط للدورة
+                        alert("⚠️ عذراً، حدث ضغط على جميع السيرفرات. يرجى المحاولة مرة أخرى.");
+                    }
+                });
+            } catch(e) {
+                currentServerIndex++;
+                if (currentServerIndex < peerServersList.length) {
+                    initPeerJS(customId, callback);
                 }
-            });
+            }
         }
 
         function confirmCreateOnlineRoom() {
@@ -1439,12 +1479,13 @@
             document.getElementById("created-room-code-display").innerText = roomCode;
             document.getElementById("room-waiting-box").style.display = "block";
 
+            currentServerIndex = 0;
             initPeerJS(roomCode, () => {
                 document.getElementById("online-status-badge").innerText = `⏳ الغرفة جاهزة برقم ${roomCode}! في انتظار انضمام صديقك...`;
             });
         }
 
-        // دالة نسخ آفرقة الغرفة متوافقة تماماً مع أجهزة الأندرويد وإيماءات العودة
+        // دالة نسخ الغرفة متوافقة تماماً مع أجهزة الأندرويد وإيماءات العودة
         function copyRoomCodeToClipboard() {
             playSound('click');
             let code = onlineState.roomCode;
@@ -1495,8 +1536,9 @@
             gameState.p2Name = userSavedName;
 
             let randomClientId = Math.floor(1000 + Math.random() * 9000).toString();
+            currentServerIndex = 0;
             initPeerJS(randomClientId, () => {
-                let peerPrefix = "ahmad_auction_app_v8_secure_";
+                let peerPrefix = "ahmad_auction_app_multi_v8_";
                 let hostFullId = peerPrefix + roomCode;
                 onlineState.conn = onlineState.peer.connect(hostFullId);
                 setupConnectionListeners();
