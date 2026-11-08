@@ -1069,10 +1069,10 @@
             
             <!-- خانة عرض الرسايل فوق -->
             <div id="chat-messages-box" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(0,255,135,0.3); border-radius: 10px; padding: 10px; height: 180px; overflow-y: auto; margin-bottom: 10px; font-size: 12px;">
-                <p style="text-align: center; color: #88c29d; font-size: 10px;">لا توجد رسائل بعد. ابدأ المحادثة!</p>
+                <p style="text-align: center; color: #88c29d; font-size: 10px;">لا توجد رسائل في هذه الجولة.</p>
             </div>
 
-            <!-- خانة كتابة الرسالة (منع إعادة تحميل الصفحة أو الرجوع للخلف عند الإرسال) -->
+            <!-- خانة كتابة الرسالة -->
             <div class="form-group" onsubmit="event.preventDefault();">
                 <input type="text" id="chat-input-msg" placeholder="اكتب رسالتك (مثلاً: ازيك عامل إيه)..." onkeydown="if(event.key==='Enter') { event.preventDefault(); sendChatMessage(); }">
             </div>
@@ -1263,7 +1263,7 @@
 
         function initPeerJS(customId, callback) {
             if (onlineState.peer) onlineState.peer.destroy();
-            let peerPrefix = "ahmad_auction_app_v6_";
+            let peerPrefix = "ahmad_auction_app_v7_";
             let fullId = peerPrefix + customId;
             onlineState.peer = new Peer(fullId);
 
@@ -1324,7 +1324,7 @@
 
             let randomClientId = Math.floor(1000 + Math.random() * 9000).toString();
             initPeerJS(randomClientId, () => {
-                let peerPrefix = "ahmad_auction_app_v6_";
+                let peerPrefix = "ahmad_auction_app_v7_";
                 let hostFullId = peerPrefix + roomCode;
                 onlineState.conn = onlineState.peer.connect(hostFullId);
                 setupConnectionListeners();
@@ -1371,7 +1371,6 @@
                 gameState.p1Name = data.p1Name;
                 document.getElementById("top-chat-btn").style.display = "flex";
             } else if (data.type === 'SYNC_ROUND_DATA') {
-                // عند بدء جولة جديدة، يتم مسح رسايل الشات تلقائياً للجولة الجديدة تماماً كما طلبتم
                 chatMessages = [];
                 renderChatMessages();
                 document.getElementById("floating-chat-notification").style.display = "none";
@@ -1388,7 +1387,7 @@
             }
         }
 
-        // منطق الشات الأونلاين (يتم تفريغ وإلغاء الرسائل مع بداية كل جولة جديدة)
+        // منطق الشات الأونلاين (يتم تفريغ الرسائل مع بداية كل جولة جديدة)
         let chatMessages = [];
 
         function openChatModal() {
@@ -1733,7 +1732,6 @@
         }
 
         function loadNextAuctionRound() {
-            // مع بداية كل جولة جديدة (دور جديد)، يتم مسح رسائل الشات تماماً تلقائياً
             chatMessages = [];
             renderChatMessages();
             document.getElementById("floating-chat-notification").style.display = "none";
@@ -1979,11 +1977,23 @@
             gameState.highestBidderIndex = activeIndex;
             gameState.hasAnyoneBidInThisRound = true;
 
-            if (bidVal === activeBudget || otherBudget < (bidVal + 1)) {
+            // المنطق الجديد: المزاد لا ينتهي فوراً لمجرد أن اللاعب زاید بـ (كل ميزانيته) إلا إذا كانت ميزانية الخصم لا تكفي أصلاً للتجاوز أو تساوت (أصبحت غير قادرة على التغطية)، أو لو الخصم ماله فلوس تكفي يعلي فوقه.
+            // بمعنى: لو الخصم عنده ميزانية تكفي للمزايدة بأعلى (أكبر من bidVal)، لا ننهي الجولة بل ننقل الدور للخصم.
+            let canOtherBeat = (otherBudget > bidVal);
+
+            if (bidVal === activeBudget && !canOtherBeat) {
+                // إذا زايد بكل فلوسه والخصم ليس لديه فلوس تعلو عليه، ينتهي المزاد فوراً لصالحه.
                 finalizeInteractiveAuction();
                 return;
             }
 
+            if (!canOtherBeat) {
+                // إذا وصل لمبلغ لا يستطيع الخصم تجاوزه، ينتهي المزاد.
+                finalizeInteractiveAuction();
+                return;
+            }
+
+            // لو الخصم عنده فلوس تكفي يعلى (أعلى من bidVal)، ننقل الدور للخصم لكي يقرر هل يعلي أم ينسحب/يتخطي!
             gameState.currentAuctionPlayerIndex = otherIndex;
             gameState.currentSelectedBid = gameState.highestBidAmount + 1;
             if (gameState.currentSelectedBid > otherBudget) gameState.currentSelectedBid = otherBudget;
@@ -2206,7 +2216,7 @@
             }
         }
 
-        function fallbackCopyTestToClipboard(text) {
+        function fallbackCopyTextToClipboard(text) {
             let textArea = document.createElement("textarea");
             textArea.value = text;
             textArea.style.position = "fixed";
