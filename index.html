@@ -66,7 +66,7 @@
         }
 
         .menu-icon, .profile-icon, .chat-icon-btn {
-            font-size: 14px;
+            font-size: 13px;
             cursor: pointer;
             color: var(--primary);
             background: rgba(5, 20, 12, 0.85);
@@ -172,7 +172,7 @@
             font-weight: 600;
         }
 
-        input[type="text"], input[type="number"], select, textarea {
+        input[type="text"], input[type="number"], input[type="password"], select, textarea {
             width: 100%;
             padding: 10px 12px;
             border-radius: 10px;
@@ -268,7 +268,63 @@
         .budget-title {
             font-size: 10px;
             color: #c2ffd6;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .admin-owner-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.25), rgba(255, 150, 0, 0.25));
+            border: 1px solid var(--accent);
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 9px;
+            color: #ffd700;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            margin-top: 2px;
+        }
+
+        .admin-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            background: linear-gradient(135deg, rgba(0, 255, 135, 0.2), rgba(0, 204, 106, 0.2));
+            border: 1px solid var(--primary);
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 9px;
+            color: var(--primary);
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 8px rgba(0, 255, 135, 0.4);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            margin-top: 2px;
+        }
+
+        .normal-user-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 2px 7px;
+            border-radius: 8px;
+            font-size: 8px;
+            color: #c2ffd6;
+            font-weight: bold;
+            margin-top: 2px;
         }
 
         .budget-value {
@@ -276,7 +332,7 @@
             font-weight: bold;
             color: var(--primary);
             padding-bottom: 3px;
-            margin-bottom: 3px;
+            margin-top: 4px;
             border-bottom: 2px solid var(--primary-dark);
             position: relative;
         }
@@ -489,7 +545,7 @@
             margin-bottom: 4px;
             font-weight: bold;
             border-bottom: 1px solid rgba(0,255,135,0.25);
-            padding-bottom: 2px;
+            padding-bottom: 4px;
         }
 
         .normal-player-badge {
@@ -695,7 +751,6 @@
         .status-online { background: rgba(0, 255, 135, 0.2); color: var(--primary); border: 1px solid var(--primary); }
         .status-waiting { background: rgba(255, 204, 0, 0.2); color: var(--accent); border: 1px solid var(--accent); }
 
-        /* سحابة الإشعار العائمة للأونلاين (Chat Bubble Notification) */
         .floating-chat-bubble {
             position: fixed;
             bottom: 30px;
@@ -739,13 +794,13 @@
 </head>
 <body>
 
-    <!-- شريط تنقل بالسطح العلوي -->
     <div class="top-nav-bar">
         <div class="menu-icon" onclick="openHistoryModal()" title="سجل المباريات">☰ السجل</div>
         <div style="display: flex; gap: 6px; align-items: center;">
             <div id="top-chat-btn" class="chat-icon-btn" onclick="openChatModal()" style="display: none;" title="دردشة الغرفة">💬 الشات</div>
-            <div class="profile-icon" onclick="openProfileModal()" title="إعدادات البروفايل">
+            <div class="profile-icon" onclick="openProfileModal()" title="إعدادات البروفايل" id="top-profile-btn-wrapper" style="display: flex; align-items: center; gap: 5px;">
                 👤 <span id="top-profile-name-display">اللاعب</span>
+                <span id="top-profile-badge-slot"></span>
             </div>
         </div>
     </div>
@@ -763,7 +818,7 @@
             </div>
         </div>
 
-        <!-- 0.1. شاشة اختيار طريقة اللعب لمزاد الأساطير (مع زر إدارة قاعدة بيانات اللاعبين تحت الخيارين) -->
+        <!-- 0.1. شاشة اختيار طريقة اللعب لمزاد الأساطير -->
         <div id="mode-select-screen" class="screen">
             <h2>⚽ مزاد أساطير الكورة</h2>
             <p style="text-align: center; color: #88c29d; font-size: 11px; margin-bottom: 12px;">اختر طريقة اللعب المفضلة</p>
@@ -773,7 +828,6 @@
                 <button class="btn online-btn" style="padding: 14px; font-size: 14px;" onclick="selectPlayMode('online')">🌐 لعب أونلاين (عبر تليفونين)</button>
             </div>
 
-            <!-- زر إدارة قاعدة بيانات اللاعبين -->
             <button class="btn sub-btn" onclick="openPlayersManager()" style="background: rgba(0, 255, 135, 0.15); border-color: var(--primary);">📋 إدارة قاعدة بيانات اللاعبين</button>
             
             <button class="btn sub-btn" style="margin-top: 10px;" onclick="showScreen('games-hub-screen')">🔙 العودة للرئيسية</button>
@@ -865,9 +919,9 @@
             
             <div id="room-waiting-box" class="section-card" style="display: none; text-align: center; margin-top:10px;">
                 <div class="status-badge status-waiting" id="online-status-badge">⏳ جارٍ تجهيز كود الغرفة...</div>
-                <p style="font-size: 11px; color: #88c29d;">شارك هذا الكود مع صديقك للانضمام:</p>
-                <div class="room-code-box" id="created-room-code-display">----</div>
-                <button class="btn online-btn" style="margin-top: 5px; padding: 10px; font-size: 12px;" onclick="copyRoomCodeToClipboard()">📋 نسخ كود الغرفة</button>
+                <p style="font-size: 11px; color: #88c29d;">شارك رقم الغرفة مع صديقك للانضمام:</p>
+                <div class="room-code-box" id="created-room-code-display">1</div>
+                <button class="btn online-btn" style="margin-top: 5px; padding: 10px; font-size: 12px;" onclick="copyRoomCodeToClipboard()">📋 نسخ رقم الغرفة</button>
             </div>
 
             <button class="btn sub-btn" style="margin-top:8px;" onclick="showScreen('online-lobby-choice-screen')">🔙 إلغاء وتراجع</button>
@@ -878,8 +932,8 @@
             <h2>🔑 انضمام لغرفة أونلاين</h2>
             
             <div class="section-card">
-                <div class="section-card-title" style="justify-content: center;">أدخل كود الغرفة المكون من أرقام</div>
-                <input type="text" id="join-room-code-input" placeholder="مثال: 4921" maxlength="6" style="text-align: center; font-size: 20px; letter-spacing: 4px; color: var(--accent); font-weight: bold;">
+                <div class="section-card-title" style="justify-content: center;">أدخل كود الغرفة</div>
+                <input type="text" id="join-room-code-input" placeholder="1 أو الكود المميز" style="text-align: center; font-size: 20px; letter-spacing: 4px; color: var(--accent); font-weight: bold;">
             </div>
 
             <button class="btn main-btn" onclick="confirmJoinOnlineRoom()">دخول الغرفة 🚀</button>
@@ -1003,16 +1057,28 @@
         </div>
     </div>
 
-    <!-- نافذة تعديل البروفايل (الاسم) -->
+    <!-- نافذة تعديل البروفايل -->
     <div id="profile-modal" class="modal">
         <div class="modal-content" style="max-width: 300px;">
             <span class="close" onclick="closeProfileModal()">&times;</span>
-            <h2>👤 اسمك المسجل</h2>
+            <h2>👤 إعدادات البروفايل</h2>
+            
             <div class="form-group" style="margin-top: 8px;">
-                <label>اسم اللاعب (سيستخدم في الأونلاين):</label>
+                <label>اسم اللاعب (للأونلاين):</label>
                 <input type="text" id="user-profile-name-input" placeholder="ادخل اسمك...">
             </div>
-            <button class="btn main-btn" onclick="saveUserProfileName()">حفظ الاسم 💾</button>
+
+            <div class="form-group" style="margin-top: 8px;" id="admin-code-group-container">
+                <label>كود الأدمنية (اختياري):</label>
+                <input type="password" id="user-admin-code-input" placeholder="أدخل كود الأدمن أو الأونر..." style="text-align: center; letter-spacing: 2px;">
+            </div>
+
+            <div id="admin-status-box" style="display: none; margin-top: 10px; background: rgba(0,0,0,0.4); border: 1px solid var(--accent); padding: 10px; border-radius: 8px; text-align: center;">
+                <p id="admin-status-msg" style="font-size: 11px; color: var(--accent); margin-bottom: 8px; font-weight: bold;"></p>
+                <button class="btn skip-btn" style="margin-top: 0; padding: 6px; font-size: 11px;" onclick="cancelAdminStatus()">إلغاء الصلاحية ❌</button>
+            </div>
+
+            <button class="btn main-btn" style="margin-top: 10px;" onclick="saveUserProfileName()">حفظ الإعدادات 💾</button>
         </div>
     </div>
 
@@ -1067,14 +1133,12 @@
             <span class="close" onclick="closeChatModal()">&times;</span>
             <h2>💬 دردشة الغرفة</h2>
             
-            <!-- خانة عرض الرسايل فوق -->
             <div id="chat-messages-box" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(0,255,135,0.3); border-radius: 10px; padding: 10px; height: 180px; overflow-y: auto; margin-bottom: 10px; font-size: 12px;">
                 <p style="text-align: center; color: #88c29d; font-size: 10px;">لا توجد رسائل في هذه الجولة.</p>
             </div>
 
-            <!-- خانة كتابة الرسالة -->
             <div class="form-group" onsubmit="event.preventDefault();">
-                <input type="text" id="chat-input-msg" placeholder="اكتب رسالتك (مثلاً: ازيك عامل إيه)..." onkeydown="if(event.key==='Enter') { event.preventDefault(); sendChatMessage(); }">
+                <input type="text" id="chat-input-msg" placeholder="اكتب رسالتك..." onkeydown="if(event.key==='Enter') { event.preventDefault(); sendChatMessage(); }">
             </div>
             <button type="button" class="btn main-btn" onclick="sendChatMessage()" style="padding: 10px; font-size: 13px;">إرسال ✉️</button>
         </div>
@@ -1186,8 +1250,10 @@
         let customPlayers = JSON.parse(localStorage.getItem("auction_custom_players")) || [];
         let matchHistory = JSON.parse(localStorage.getItem("auction_match_history")) || [];
         let userSavedName = localStorage.getItem("auction_user_profile_name") || "اللاعب";
+        
+        let adminRoleType = localStorage.getItem("auction_admin_role_type") || "";
 
-        let playMode = "local"; // "local" or "online"
+        let playMode = "local"; 
         let onlineState = {
             peer: null,
             conn: null,
@@ -1210,29 +1276,92 @@
         const positionOrder = { "GK": 1, "CB": 2, "RB/LB": 3, "CM": 4, "CAM": 5, "LW/RW": 6, "ST": 7 };
         const tierWeights = { "جامد جدا": 4, "جامد": 3, "ضعيف نسبيا": 2, "ضعيف جدا": 1 };
 
-        document.getElementById("top-profile-name-display").innerText = userSavedName;
-        document.getElementById("user-profile-name-input").value = userSavedName;
+        updateTopProfileDisplay();
+
+        function updateTopProfileDisplay() {
+            document.getElementById("top-profile-name-display").innerText = userSavedName;
+            let badgeSlot = document.getElementById("top-profile-badge-slot");
+            if (adminRoleType === "owner") {
+                badgeSlot.innerHTML = `<span class="admin-owner-badge" style="font-size: 8px; padding: 1px 4px;">👑 [Owner • Admin]</span>`;
+            } else if (adminRoleType.startsWith("admin")) {
+                badgeSlot.innerHTML = `<span class="admin-badge" style="font-size: 8px; padding: 1px 4px;">🛡️ [Admin]</span>`;
+            } else {
+                badgeSlot.innerHTML = `<span class="normal-user-badge" style="font-size: 8px; padding: 1px 4px;">👤 [مستخدم عادي]</span>`;
+            }
+        }
 
         function openProfileModal() {
             playSound('click');
             document.getElementById("user-profile-name-input").value = userSavedName;
+            document.getElementById("user-admin-code-input").value = "";
+
+            let codeGroup = document.getElementById("admin-code-group-container");
+            let statusBox = document.getElementById("admin-status-box");
+            let statusMsg = document.getElementById("admin-status-msg");
+
+            if (adminRoleType !== "") {
+                codeGroup.style.display = "none";
+                statusBox.style.display = "block";
+                if (adminRoleType === "owner") {
+                    statusMsg.innerText = "أنت مسجل حالياً بصلاحية الأونر أدمن المميزة 👑 [Owner • Admin]";
+                } else {
+                    statusMsg.innerText = "أنت مسجل حالياً بصلاحية الأدمن المميز 🛡️ [Admin]";
+                }
+            } else {
+                codeGroup.style.display = "block";
+                statusBox.style.display = "none";
+            }
+
             document.getElementById("profile-modal").style.display = "flex";
-            history.pushState({ modal: 'profile' }, "", "");
         }
 
         function closeProfileModal() {
             playSound('click');
             document.getElementById("profile-modal").style.display = "none";
-            if (history.state && history.state.modal) history.back();
         }
 
         function saveUserProfileName() {
             let typed = document.getElementById("user-profile-name-input").value.trim();
+            let adminPass = document.getElementById("user-admin-code-input").value.trim();
+
             if (!typed) return alert("الرجاء إدخال اسمك!");
+
             userSavedName = typed;
             localStorage.setItem("auction_user_profile_name", userSavedName);
-            document.getElementById("top-profile-name-display").innerText = userSavedName;
+
+            if (adminPass !== "") {
+                if (adminPass === "157538524569729512153246") {
+                    adminRoleType = "owner";
+                    localStorage.setItem("auction_admin_role_type", "owner");
+                    alert("👑 تم تفعيل صلاحيات الأونر أدمن بنجاح!");
+                } else if (adminPass === "153246") {
+                    adminRoleType = "admin1";
+                    localStorage.setItem("auction_admin_role_type", "admin1");
+                    alert("🛡️ تم تفعيل كود الأدمن الأول (غرفة 5) بنجاح!");
+                } else if (adminPass === "729512") {
+                    adminRoleType = "admin2";
+                    localStorage.setItem("auction_admin_role_type", "admin2");
+                    alert("🛡️ تم تفعيل كود الأدمن الثاني (غرفة 6) بنجاح!");
+                } else if (adminPass === "157538524569") {
+                    adminRoleType = "admin3";
+                    localStorage.setItem("auction_admin_role_type", "admin3");
+                    alert("🛡️ تم تفعيل كود الأدمن الثالث (غرفة 7) بنجاح!");
+                } else {
+                    alert("⚠️ كود الأدمن غير صحيح، تم حفظ اسمك كـ مستخدم عادي.");
+                }
+            }
+
+            updateTopProfileDisplay();
             playSound('success');
+            closeProfileModal();
+        }
+
+        function cancelAdminStatus() {
+            playSound('click');
+            adminRoleType = "";
+            localStorage.removeItem("auction_admin_role_type");
+            alert("✅ تم إلغاء الصلاحية وأصبحت مستخدماً عادياً الآن.");
+            updateTopProfileDisplay();
             closeProfileModal();
         }
 
@@ -1257,15 +1386,10 @@
             showScreen('online-join-input-screen');
         }
 
-        function generateRoomCode() {
-            return Math.floor(1000 + Math.random() * 9000).toString();
-        }
-
         function initPeerJS(customId, callback) {
             if (onlineState.peer) onlineState.peer.destroy();
             let peerPrefix = "ahmad_auction_app_v8_secure_";
             let fullId = peerPrefix + customId;
-            // استخدام خوادم مؤمنة مستقرة لضمان نجاح الاتصال المباشر
             onlineState.peer = new Peer(fullId, {
                 host: '0.peerjs.com',
                 port: 443,
@@ -1283,13 +1407,30 @@
             });
 
             onlineState.peer.on('error', (err) => {
-                alert("⚠️ خطأ في الاتصال بالأونلاين: " + err.type);
+                if (err.type === 'peer-unavailable') {
+                    alert("كود الغرفة غير صحيح");
+                } else {
+                    alert("⚠️ خطأ في الاتصال بالأونلاين: " + err.type);
+                }
             });
         }
 
         function confirmCreateOnlineRoom() {
             playSound('click');
-            let roomCode = generateRoomCode();
+            let roomCode = "";
+
+            if (adminRoleType === "owner") {
+                roomCode = "1";
+            } else if (adminRoleType === "admin1") {
+                roomCode = "5";
+            } else if (adminRoleType === "admin2") {
+                roomCode = "6";
+            } else if (adminRoleType === "admin3") {
+                roomCode = "7";
+            } else {
+                roomCode = Math.floor(1000 + Math.random() * 9000).toString();
+            }
+
             onlineState.roomCode = roomCode;
             onlineState.isHost = true;
             onlineState.myPlayerIndex = 1;
@@ -1299,18 +1440,20 @@
             document.getElementById("room-waiting-box").style.display = "block";
 
             initPeerJS(roomCode, () => {
-                document.getElementById("online-status-badge").innerText = "⏳ الغرفة جاهزة! في انتظار انضمام صديقك...";
+                document.getElementById("online-status-badge").innerText = `⏳ الغرفة جاهزة برقم ${roomCode}! في انتظار انضمام صديقك...`;
             });
         }
 
+        // دالة نسخ آفرقة الغرفة متوافقة تماماً مع أجهزة الأندرويد وإيماءات العودة
         function copyRoomCodeToClipboard() {
+            playSound('click');
             let code = onlineState.roomCode;
-            if (!code) return alert("⚠️ لا يوجد كود للنسخ حالياً!");
-            
+            if (!code) return;
+
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(code).then(() => {
-                    alert("تم نسخ كود الغرفة بنجاح: " + code + " 📋");
-                }).catch(() => {
+                    alert("تم نسخ رقم الغرفة بنجاح 📋");
+                }).catch(err => {
                     fallbackCopyTextToClipboard(code);
                 });
             } else {
@@ -1318,9 +1461,32 @@
             }
         }
 
+        function fallbackCopyTextToClipboard(text) {
+            let textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";  
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.opacity = "0";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                let successful = document.execCommand('copy');
+                if (successful) {
+                    alert("تم نسخ رقم الغرفة بنجاح 📋");
+                } else {
+                    alert("تعذر النسخ، يرجى نسخه يدوياً.");
+                }
+            } catch (err) {
+                alert("تعذر النسخ، يرجى نسخه يدوياً.");
+            }
+            document.body.removeChild(textArea);
+        }
+
         function confirmJoinOnlineRoom() {
             let roomCode = document.getElementById("join-room-code-input").value.trim();
-            if (!roomCode) return alert("⚠️ أدخل كود الغرفة أولاً!");
+            if (!roomCode) return alert("⚠️ الرجاء أدخل كود الغرفة أولاً!");
 
             playSound('click');
             onlineState.roomCode = roomCode;
@@ -1342,9 +1508,9 @@
                 playSound('success');
                 document.getElementById("top-chat-btn").style.display = "flex";
                 if (onlineState.isHost) {
-                    sendOnlineData({ type: 'JOIN_RESPONSE', p1Name: gameState.p1Name });
+                    sendOnlineData({ type: 'JOIN_RESPONSE', p1Name: gameState.p1Name, hostAdminRole: adminRoleType });
                 } else {
-                    sendOnlineData({ type: 'CLIENT_JOINED', p2Name: gameState.p2Name });
+                    sendOnlineData({ type: 'CLIENT_JOINED', p2Name: gameState.p2Name, clientAdminRole: adminRoleType });
                 }
             });
 
@@ -1364,23 +1530,23 @@
             }
         }
 
+        let remoteAdminRole = "";
+
         function handleIncomingOnlineData(data) {
             if (data.type === 'CLIENT_JOINED') {
                 gameState.p2Name = data.p2Name;
-                sendOnlineData({ type: 'HOST_START_GAME_CONFIG', p1Name: gameState.p1Name });
+                remoteAdminRole = data.clientAdminRole;
+                sendOnlineData({ type: 'HOST_START_GAME_CONFIG', p1Name: gameState.p1Name, hostAdminRole: adminRoleType });
                 document.getElementById("top-chat-btn").style.display = "flex";
                 startAuctionGameHostOnline();
-            } else if (data.type === 'JOIN_RESPONSE') {
+            } else if (data.type === 'JOIN_RESPONSE' || data.type === 'HOST_START_GAME_CONFIG') {
                 gameState.p1Name = data.p1Name;
-                document.getElementById("top-chat-btn").style.display = "flex";
-            } else if (data.type === 'HOST_START_GAME_CONFIG') {
-                gameState.p1Name = data.p1Name;
+                remoteAdminRole = data.hostAdminRole;
                 document.getElementById("top-chat-btn").style.display = "flex";
             } else if (data.type === 'SYNC_ROUND_DATA') {
                 chatMessages = [];
                 renderChatMessages();
                 document.getElementById("floating-chat-notification").style.display = "none";
-
                 applySyncedRoundData(data);
             } else if (data.type === 'SYNC_BID_ACTION') {
                 applySyncedBidAction(data);
@@ -1393,7 +1559,6 @@
             }
         }
 
-        // منطق الشات الأونلاين (يتم تفريغ الرسائل مع بداية كل جولة جديدة)
         let chatMessages = [];
 
         function openChatModal() {
@@ -1401,13 +1566,11 @@
             document.getElementById("floating-chat-notification").style.display = "none";
             document.getElementById("chat-modal").style.display = "flex";
             renderChatMessages();
-            history.pushState({ modal: 'chat' }, "", "");
         }
 
         function closeChatModal() {
             playSound('click');
             document.getElementById("chat-modal").style.display = "none";
-            if (history.state && history.state.modal) history.back();
         }
 
         function openChatModalFromBubble() {
@@ -1490,38 +1653,17 @@
             loadNextAuctionRound();
         }
 
-        function showScreen(screenId, pushHistory = true) {
+        function showScreen(screenId) {
             playSound('click');
             stopRoundTimer();
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
-            closeAllModals(false);
-            if (pushHistory) history.pushState({ screen: screenId }, "", "");
+            closeAllModals();
         }
 
-        function closeAllModals(pushState = true) {
+        function closeAllModals() {
             document.querySelectorAll('.modal').forEach(m => m.style.display = "none");
-            if (pushState && history.state && history.state.modal) history.back();
         }
-
-        window.addEventListener('popstate', function(event) {
-            let modals = document.querySelectorAll('.modal');
-            let isModalOpen = false;
-            modals.forEach(m => {
-                if (m.style.display === "flex") { m.style.display = "none"; isModalOpen = true; }
-            });
-            if (isModalOpen) { history.pushState({ screen: 'current' }, "", ""); return; }
-
-            let activeScreen = document.querySelector('.screen.active');
-            if (activeScreen && activeScreen.id !== 'games-hub-screen') {
-                stopRoundTimer();
-                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-                document.getElementById('games-hub-screen').classList.add('active');
-                history.replaceState({ screen: 'games-hub-screen' }, "", "");
-            }
-        });
-
-        history.replaceState({ screen: 'games-hub-screen' }, "", "");
 
         function updateBudgetNotice() {
             let size = document.getElementById("team-size").value;
@@ -1532,8 +1674,8 @@
             localStorage.setItem("auction_custom_players", JSON.stringify(customPlayers));
         }
 
-        function openPlayersManager() { playSound('click'); renderCustomPlayersList(); document.getElementById("players-manager-modal").style.display = "flex"; history.pushState({ modal: 'players_manager' }, "", ""); }
-        function closePlayersManager() { playSound('click'); document.getElementById("players-manager-modal").style.display = "none"; if (history.state && history.state.modal) history.back(); }
+        function openPlayersManager() { playSound('click'); renderCustomPlayersList(); document.getElementById("players-manager-modal").style.display = "flex"; }
+        function closePlayersManager() { playSound('click'); document.getElementById("players-manager-modal").style.display = "none"; }
         
         function openSitePlayersViewer() {
             playSound('click');
@@ -1547,23 +1689,21 @@
                     </div>`;
             });
             document.getElementById("site-players-viewer-modal").style.display = "flex";
-            history.pushState({ modal: 'site_players_viewer' }, "", "");
         }
         function closeSitePlayersViewer() {
             playSound('click');
             document.getElementById("site-players-viewer-modal").style.display = "none";
-            if (history.state && history.state.modal) history.back();
         }
 
-        function openImportChoiceModal() { playSound('click'); document.getElementById("import-choice-modal").style.display = "flex"; history.pushState({ modal: 'import_choice' }, "", ""); }
-        function closeImportChoiceModal() { document.getElementById("import-choice-modal").style.display = "none"; if (history.state && history.state.modal) history.back(); }
+        function openImportChoiceModal() { playSound('click'); document.getElementById("import-choice-modal").style.display = "flex"; }
+        function closeImportChoiceModal() { document.getElementById("import-choice-modal").style.display = "none"; }
         function triggerFileInput() { document.getElementById("import-choice-modal").style.display = "none"; document.getElementById("import-file-input").click(); }
-        function openTextCodeImportModal() { playSound('click'); document.getElementById("import-choice-modal").style.display = "none"; document.getElementById("text-code-import-modal").style.display = "flex"; history.pushState({ modal: 'text_code_import' }, "", ""); }
-        function closeTextCodeImportModal() { playSound('click'); document.getElementById("text-code-import-modal").style.display = "none"; if (history.state && history.state.modal) history.back(); }
-        function openExportModal() { playSound('click'); document.getElementById("export-filename-input").value = "custom_players_" + new Date().toISOString().slice(0, 10); document.getElementById("export-filename-modal").style.display = "flex"; history.pushState({ modal: 'export_modal' }, "", ""); }
-        function closeExportModal() { playSound('click'); document.getElementById("export-filename-modal").style.display = "none"; if (history.state && history.state.modal) history.back(); }
-        function openHistoryModal() { playSound('click'); renderMatchHistoryList(); document.getElementById("history-modal").style.display = "flex"; history.pushState({ modal: 'history' }, "", ""); }
-        function closeHistoryModal() { playSound('click'); document.getElementById("history-modal").style.display = "none"; if (history.state && history.state.modal) history.back(); }
+        function openTextCodeImportModal() { playSound('click'); document.getElementById("import-choice-modal").style.display = "none"; document.getElementById("text-code-import-modal").style.display = "flex"; }
+        function closeTextCodeImportModal() { playSound('click'); document.getElementById("text-code-import-modal").style.display = "none"; }
+        function openExportModal() { playSound('click'); document.getElementById("export-filename-input").value = "custom_players_" + new Date().toISOString().slice(0, 10); document.getElementById("export-filename-modal").style.display = "flex"; }
+        function closeExportModal() { playSound('click'); document.getElementById("export-filename-modal").style.display = "none"; }
+        function openHistoryModal() { playSound('click'); renderMatchHistoryList(); document.getElementById("history-modal").style.display = "flex"; }
+        function closeHistoryModal() { playSound('click'); document.getElementById("history-modal").style.display = "none"; }
 
         function clearAllHistory() {
             if (confirm("حذف السجل بالكامل؟")) { matchHistory = []; localStorage.removeItem("auction_match_history"); renderMatchHistoryList(); alert("تم التطهير!"); }
@@ -1696,13 +1836,9 @@
                 gameState.reversedRoundsIndices = indices.slice(0, numReversed);
             }
 
-            document.getElementById("box-title-p1-bud").innerText = `ميزانية ${gameState.p1Name}`;
-            document.getElementById("box-title-p2-bud").innerText = `ميزانية ${gameState.p2Name}`;
-            document.getElementById("perm-title-p1").innerText = gameState.p1Name;
-            document.getElementById("perm-title-p2").innerText = gameState.p2Name;
-
+            updateBudgetTitlesAndNames();
+            gameState.predefinedRounds = []; gameState.setupRefereeIndex = 0;
             if (gameState.refereeMode === "with") {
-                gameState.predefinedRounds = []; gameState.setupRefereeIndex = 0;
                 showScreen('referee-setup-screen'); loadRefereeSetupStep();
             } else {
                 showScreen('auction-screen'); loadNextAuctionRound();
@@ -1786,7 +1922,8 @@
             if (playMode === 'online' && onlineState.isHost) {
                 sendOnlineData({
                     type: 'SYNC_ROUND_DATA',
-                    gameState: gameState
+                    gameState: gameState,
+                    hostAdminRole: adminRoleType
                 });
             }
 
@@ -1796,7 +1933,11 @@
         }
 
         function applySyncedRoundData(data) {
+            if (data.hostAdminRole !== undefined) {
+                remoteAdminRole = data.hostAdminRole;
+            }
             Object.assign(gameState, data.gameState);
+            updateBudgetTitlesAndNames();
             setupAuctionScreenUI(); renderPermanentSquads(); startRoundTimer();
             showScreen('auction-screen');
         }
@@ -1844,12 +1985,57 @@
             } else { finalizeInteractiveAuction(); }
         }
 
+        function updateBudgetTitlesAndNames() {
+            let p1TitleBox = document.getElementById("box-title-p1-bud");
+            let p2TitleBox = document.getElementById("box-title-p2-bud");
+            let permTitleP1 = document.getElementById("perm-title-p1");
+            let permTitleP2 = document.getElementById("perm-title-p2");
+
+            let p1NameStr = gameState.p1Name || "اللاعب الأول";
+            let p2NameStr = gameState.p2Name || "اللاعب الثاني";
+
+            let p1Role = "";
+            let p2Role = "";
+
+            if (playMode === 'online') {
+                if (onlineState.isHost) {
+                    p1Role = adminRoleType;
+                    p2Role = remoteAdminRole;
+                } else {
+                    p1Role = remoteAdminRole;
+                    p2Role = adminRoleType;
+                }
+            } else {
+                p1Role = adminRoleType;
+                p2Role = "";
+            }
+
+            if (p1Role === "owner") {
+                p1TitleBox.innerHTML = `ميزانية <span style="color:#ffd700; font-weight:bold;">${p1NameStr}</span> <span class="admin-owner-badge">👑 [Owner • Admin]</span>`;
+                permTitleP1.innerHTML = `<span style="color:#ffd700; font-weight:bold;">${p1NameStr}</span> <span class="admin-owner-badge">👑 [Owner • Admin]</span>`;
+            } else if (p1Role.startsWith("admin")) {
+                p1TitleBox.innerHTML = `ميزانية <span style="color:var(--primary); font-weight:bold;">${p1NameStr}</span> <span class="admin-badge">🛡️ [Admin]</span>`;
+                permTitleP1.innerHTML = `<span style="color:var(--primary); font-weight:bold;">${p1NameStr}</span> <span class="admin-badge">🛡️ [Admin]</span>`;
+            } else {
+                p1TitleBox.innerHTML = `ميزانية <span style="font-weight:bold;">${p1NameStr}</span> <span class="normal-user-badge">👤 [مستخدم عادي]</span>`;
+                permTitleP1.innerHTML = `<span style="font-weight:bold;">${p1NameStr}</span> <span class="normal-user-badge">👤 [مستخدم عادي]</span>`;
+            }
+
+            if (p2Role === "owner") {
+                p2TitleBox.innerHTML = `ميزانية <span style="color:#ffd700; font-weight:bold;">${p2NameStr}</span> <span class="admin-owner-badge">👑 [Owner • Admin]</span>`;
+                permTitleP2.innerHTML = `<span style="color:#ffd700; font-weight:bold;">${p2NameStr}</span> <span class="admin-owner-badge">👑 [Owner • Admin]</span>`;
+            } else if (p2Role.startsWith("admin")) {
+                p2TitleBox.innerHTML = `ميزانية <span style="color:var(--primary); font-weight:bold;">${p2NameStr}</span> <span class="admin-badge">🛡️ [Admin]</span>`;
+                permTitleP2.innerHTML = `<span style="color:var(--primary); font-weight:bold;">${p2NameStr}</span> <span class="admin-badge">🛡️ [Admin]</span>`;
+            } else {
+                p2TitleBox.innerHTML = `ميزانية <span style="font-weight:bold;">${p2NameStr}</span> <span class="normal-user-badge">👤 [مستخدم عادي]</span>`;
+                permTitleP2.innerHTML = `<span style="font-weight:bold;">${p2NameStr}</span> <span class="normal-user-badge">👤 [مستخدم عادي]</span>`;
+            }
+        }
+
         function setupAuctionScreenUI() {
+            updateBudgetTitlesAndNames();
             document.getElementById("round-display").innerText = `الدور: ${gameState.currentRound}/${gameState.maxRounds} (${gameState.roundRoles[gameState.currentRound - 1]})`;
-            document.getElementById("box-title-p1-bud").innerText = `ميزانية ${gameState.p1Name}`;
-            document.getElementById("box-title-p2-bud").innerText = `ميزانية ${gameState.p2Name}`;
-            document.getElementById("perm-title-p1").innerText = gameState.p1Name;
-            document.getElementById("perm-title-p2").innerText = gameState.p2Name;
             document.getElementById("p1-bud-val").innerText = `${gameState.p1Budget}M`;
             document.getElementById("p2-bud-val").innerText = `${gameState.p2Budget}M`;
             document.getElementById("current-player-name").innerText = gameState.activeBidPlayer.name;
@@ -1870,7 +2056,8 @@
 
         function updateHighestBidDisplay() {
             let box = document.getElementById("highest-bid-display");
-            box.innerHTML = !gameState.hasAnyoneBidInThisRound ? `🔥 أعلى مزايدة: لا توجد بعد` : `🔥 أعلى مزايدة: <b>${gameState.highestBidAmount}M</b> (${gameState.highestBidderIndex === 1 ? gameState.p1Name : gameState.p2Name})`;
+            let bidderName = gameState.highestBidderIndex === 1 ? gameState.p1Name : gameState.p2Name;
+            box.innerHTML = !gameState.hasAnyoneBidInThisRound ? `🔥 أعلى مزايدة: لا توجد بعد` : `🔥 أعلى مزايدة: <b>${gameState.highestBidAmount}M</b> (${bidderName})`;
         }
 
         function updateInteractivePrompt() {
@@ -1983,9 +2170,6 @@
             gameState.highestBidderIndex = activeIndex;
             gameState.hasAnyoneBidInThisRound = true;
 
-            // المنطق الصحيح والدقيق للمزاد:
-            // 1. لو اللاعب زايد بـ 100M (أو بكل ميزانيته الإجمالية للعبة 100/200) ولم يتبق لدى الخصم ميزانية كافية للتجاوز، يكسب فوراً.
-            // 2. لو زايد بكل فلوسه في الميزانية الحالية ولكن الخصم يمتلك رصيد مالي أعلى يسمح له بالتجاوز، لا ينتهي الجيم فوراً بل ينتقل الدور للخصم.
             let isTotalStartingBudgetBid = (bidVal === gameState.startingBudget && gameState.startingBudget >= 100);
             let canOtherBeat = (otherBudget > bidVal);
 
@@ -1999,7 +2183,6 @@
                 return;
             }
 
-            // انتقال الدور للخصم ليقرر (المزايدة برقم أعلى أو التخطي)
             gameState.currentAuctionPlayerIndex = otherIndex;
             gameState.currentSelectedBid = gameState.highestBidAmount + 1;
             if (gameState.currentSelectedBid > otherBudget) gameState.currentSelectedBid = otherBudget;
@@ -2214,32 +2397,12 @@
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(() => {
                     alert("تم نسخ التشكيلتين بنجاح! 📋");
-                }).catch(() => {
+                }).catch(err => {
                     fallbackCopyTextToClipboard(text);
                 });
             } else {
                 fallbackCopyTextToClipboard(text);
             }
-        }
-
-        function fallbackCopyTextToClipboard(text) {
-            let textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.position = "fixed";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                let successful = document.execCommand('copy');
-                if (successful) {
-                    alert("تم نسخ التشكيلتين بنجاح! 📋");
-                } else {
-                    alert("عذراً، لم يتم النسخ تلقائياً.");
-                }
-            } catch (err) {
-                alert("فشل نسخ النص.");
-            }
-            document.body.removeChild(textArea);
         }
 
         function saveMatchToHistory() {
