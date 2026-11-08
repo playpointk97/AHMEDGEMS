@@ -1263,9 +1263,15 @@
 
         function initPeerJS(customId, callback) {
             if (onlineState.peer) onlineState.peer.destroy();
-            let peerPrefix = "ahmad_auction_app_v7_";
+            let peerPrefix = "ahmad_auction_app_v8_secure_";
             let fullId = peerPrefix + customId;
-            onlineState.peer = new Peer(fullId);
+            // استخدام خوادم مؤمنة مستقرة لضمان نجاح الاتصال المباشر
+            onlineState.peer = new Peer(fullId, {
+                host: '0.peerjs.com',
+                port: 443,
+                secure: true,
+                path: '/'
+            });
 
             onlineState.peer.on('open', (id) => {
                 if (callback) callback(id);
@@ -1324,7 +1330,7 @@
 
             let randomClientId = Math.floor(1000 + Math.random() * 9000).toString();
             initPeerJS(randomClientId, () => {
-                let peerPrefix = "ahmad_auction_app_v7_";
+                let peerPrefix = "ahmad_auction_app_v8_secure_";
                 let hostFullId = peerPrefix + roomCode;
                 onlineState.conn = onlineState.peer.connect(hostFullId);
                 setupConnectionListeners();
@@ -1977,23 +1983,23 @@
             gameState.highestBidderIndex = activeIndex;
             gameState.hasAnyoneBidInThisRound = true;
 
-            // المنطق الجديد: المزاد لا ينتهي فوراً لمجرد أن اللاعب زاید بـ (كل ميزانيته) إلا إذا كانت ميزانية الخصم لا تكفي أصلاً للتجاوز أو تساوت (أصبحت غير قادرة على التغطية)، أو لو الخصم ماله فلوس تكفي يعلي فوقه.
-            // بمعنى: لو الخصم عنده ميزانية تكفي للمزايدة بأعلى (أكبر من bidVal)، لا ننهي الجولة بل ننقل الدور للخصم.
+            // المنطق الصحيح والدقيق للمزاد:
+            // 1. لو اللاعب زايد بـ 100M (أو بكل ميزانيته الإجمالية للعبة 100/200) ولم يتبق لدى الخصم ميزانية كافية للتجاوز، يكسب فوراً.
+            // 2. لو زايد بكل فلوسه في الميزانية الحالية ولكن الخصم يمتلك رصيد مالي أعلى يسمح له بالتجاوز، لا ينتهي الجيم فوراً بل ينتقل الدور للخصم.
+            let isTotalStartingBudgetBid = (bidVal === gameState.startingBudget && gameState.startingBudget >= 100);
             let canOtherBeat = (otherBudget > bidVal);
 
-            if (bidVal === activeBudget && !canOtherBeat) {
-                // إذا زايد بكل فلوسه والخصم ليس لديه فلوس تعلو عليه، ينتهي المزاد فوراً لصالحه.
+            if (isTotalStartingBudgetBid && !canOtherBeat) {
                 finalizeInteractiveAuction();
                 return;
             }
 
             if (!canOtherBeat) {
-                // إذا وصل لمبلغ لا يستطيع الخصم تجاوزه، ينتهي المزاد.
                 finalizeInteractiveAuction();
                 return;
             }
 
-            // لو الخصم عنده فلوس تكفي يعلى (أعلى من bidVal)، ننقل الدور للخصم لكي يقرر هل يعلي أم ينسحب/يتخطي!
+            // انتقال الدور للخصم ليقرر (المزايدة برقم أعلى أو التخطي)
             gameState.currentAuctionPlayerIndex = otherIndex;
             gameState.currentSelectedBid = gameState.highestBidAmount + 1;
             if (gameState.currentSelectedBid > otherBudget) gameState.currentSelectedBid = otherBudget;
