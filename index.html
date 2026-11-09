@@ -683,7 +683,6 @@
             overflow-y: auto;
         }
 
-        /* تصميم واجهة الترحيب الملكية للأونر في الأونلاين فقط */
         .owner-welcome-modal {
             display: none;
             position: fixed;
@@ -700,7 +699,6 @@
             animation: fadeInModal 0.4s ease;
         }
 
-        /* تصميم واجهة الترحيب الخاصة بالأدمن العادي في الأونلاين فقط */
         .admin-welcome-modal {
             display: none;
             position: fixed;
@@ -891,7 +889,7 @@
         </div>
     </div>
 
-    <!-- نافذة الترحيب الملكية للأونر في الأونلاين فقط (تظهر مرة واحدة فقط لمدة ثانيتين عند دخول الروم) -->
+    <!-- نافذة الترحيب الملكية للأونر في الأونلاين فقط -->
     <div id="owner-welcome-popup-modal" class="owner-welcome-modal">
         <div class="owner-welcome-card">
             <div class="crown-icon-animated">👑</div>
@@ -909,7 +907,7 @@
         </div>
     </div>
 
-    <!-- نافذة الترحيب الخاصة بالأدمن العادي في الأونلاين فقط (تظهر مرة واحدة فقط لمدة ثانيتين عند دخول الروم) -->
+    <!-- نافذة الترحيب الخاصة بالأدمن العادي في الأونلاين فقط -->
     <div id="admin-welcome-popup-modal" class="admin-welcome-modal">
         <div class="admin-welcome-card">
             <div class="crown-icon-animated">🛡️</div>
@@ -2155,19 +2153,38 @@
                 gameState.isCurrentRoundReversed = false;
             } else {
                 gameState.isCurrentRoundReversed = gameState.reversedRoundsIndices.includes(currentRoundIdx);
+                
+                // تصفية اللاعبين المتاحين في نفس المركز وغير المستخدمين مسبقاً في هذا الجيم
                 let rolePlayers = gameState.activePool.filter(p => p.pos === currentRole && !gameState.usedPlayerNamesInMatch.includes(p.name));
-                if (rolePlayers.length === 0) rolePlayers = [...gameState.activePool];
+                if (rolePlayers.length < 2) {
+                    // إذا نفد عدد لاعبي المركز المحدد بدقة، نأخذ من أي مركز آخر لم يتم استخدامه
+                    rolePlayers = gameState.activePool.filter(p => !gameState.usedPlayerNamesInMatch.includes(p.name));
+                }
+                if (rolePlayers.length < 2) {
+                    rolePlayers = [...gameState.activePool]; // احتياطي نهائي
+                }
+
                 rolePlayers.sort(() => Math.random() - 0.5);
                 let highTier = rolePlayers.filter(p => (tierWeights[p.tier] || 3) >= 3);
                 let lowTier = rolePlayers.filter(p => (tierWeights[p.tier] || 3) < 3);
                 if (highTier.length === 0) highTier = rolePlayers;
                 if (lowTier.length === 0) lowTier = rolePlayers;
+
                 let randHigh = highTier[Math.floor(Math.random() * highTier.length)];
                 let randLow = lowTier[Math.floor(Math.random() * lowTier.length)];
                 
+                // ضمان عدم تكرار نفس اللاعب للدورين معاً
+                if (randHigh.name === randLow.name && rolePlayers.length > 1) {
+                    let otherList = rolePlayers.filter(p => p.name !== randHigh.name);
+                    if (otherList.length > 0) randLow = otherList[Math.floor(Math.random() * otherList.length)];
+                }
+
                 gameState.activeBidPlayer = gameState.isCurrentRoundReversed ? randLow : randHigh;
                 gameState.activeFreePlayer = gameState.isCurrentRoundReversed ? randHigh : randLow;
+
+                // تسجيل اللاعبين كـ مستخدمين في هذا الجيم لمنع تكرارهم نهائياً
                 gameState.usedPlayerNamesInMatch.push(gameState.activeBidPlayer.name);
+                gameState.usedPlayerNamesInMatch.push(gameState.activeFreePlayer.name);
             }
 
             let baseStartingPlayer = (currentRoundIdx % 2 === 0) ? 1 : 2;
@@ -2616,7 +2633,6 @@
         }
 
         function preparePitchEndGameScreen() {
-            // تحديث عناوين الملاعب لتظهر كلمة "ملعب" ثابتة ويليها اسم اللاعب المتغير
             document.getElementById("pitch-title-p1").innerText = `ملعب ${gameState.p1Name}`;
             document.getElementById("pitch-title-p2").innerText = `ملعب ${gameState.p2Name}`;
 
