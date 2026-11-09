@@ -683,6 +683,92 @@
             overflow-y: auto;
         }
 
+        /* تصميم واجهة الترحيب الملكية للأونر في الأونلاين فقط */
+        .owner-welcome-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(2, 10, 6, 0.92);
+            backdrop-filter: blur(12px);
+            z-index: 500;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            animation: fadeInModal 0.4s ease;
+        }
+
+        /* تصميم واجهة الترحيب الخاصة بالأدمن العادي في الأونلاين فقط */
+        .admin-welcome-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(2, 10, 6, 0.92);
+            backdrop-filter: blur(12px);
+            z-index: 500;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            animation: fadeInModal 0.4s ease;
+        }
+
+        @keyframes fadeInModal {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .owner-welcome-card {
+            background: linear-gradient(145deg, #0d381c, #051910);
+            border: 2.5px solid var(--accent);
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 380px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 0 35px rgba(255, 215, 0, 0.4), inset 0 0 20px rgba(0, 255, 135, 0.2);
+            position: relative;
+            animation: pulseGlowCard 1.5s ease-in-out infinite alternate;
+        }
+
+        .admin-welcome-card {
+            background: linear-gradient(145deg, #092618, #031008);
+            border: 2.5px solid var(--primary);
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 380px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 0 35px rgba(0, 255, 135, 0.35), inset 0 0 20px rgba(255, 204, 0, 0.15);
+            position: relative;
+            animation: pulseGlowAdmin 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulseGlowCard {
+            0% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), inset 0 0 10px rgba(0, 255, 135, 0.1); }
+            100% { box-shadow: 0 0 45px rgba(255, 215, 0, 0.6), inset 0 0 25px rgba(0, 255, 135, 0.3); }
+        }
+
+        @keyframes pulseGlowAdmin {
+            0% { box-shadow: 0 0 20px rgba(0, 255, 135, 0.25), inset 0 0 10px rgba(255, 204, 0, 0.1); }
+            100% { box-shadow: 0 0 45px rgba(0, 255, 135, 0.55), inset 0 0 25px rgba(255, 204, 0, 0.25); }
+        }
+
+        .crown-icon-animated {
+            font-size: 46px;
+            margin-bottom: 8px;
+            animation: floatCrown 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatCrown {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-8px) scale(1.08); }
+        }
+
         .close {
             position: absolute;
             left: 14px;
@@ -802,6 +888,42 @@
                 👤 <span id="top-profile-name-display">اللاعب</span>
                 <span id="top-profile-badge-slot"></span>
             </div>
+        </div>
+    </div>
+
+    <!-- نافذة الترحيب الملكية للأونر في الأونلاين فقط (تظهر لمدة ثانيتين) -->
+    <div id="owner-welcome-popup-modal" class="owner-welcome-modal">
+        <div class="owner-welcome-card">
+            <div class="crown-icon-animated">👑</div>
+            <h2 style="font-size: 17px; color: var(--accent); margin-bottom: 6px;">حضرة صاحب اللعبة ومبتكرها معنا!</h2>
+            
+            <div style="display: inline-block; background: rgba(255, 215, 0, 0.15); border: 1px solid var(--accent); color: #ffd700; padding: 4px 12px; border-radius: 10px; font-size: 15px; font-weight: bold; margin: 6px 0;" id="popup-owner-name-display">أحمد علي</div>
+            
+            <div style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.25), rgba(255, 150, 0, 0.25)); border: 1px solid var(--accent); padding: 4px 12px; border-radius: 10px; font-size: 10px; color: #ffd700; font-weight: bold; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); margin: 6px 0 12px 0;">
+                👑 [Owner • Master Developer & Creator]
+            </div>
+
+            <p style="font-size: 11px; line-height: 1.5; color: #c2ffd6; background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 10px; border-right: 3px solid var(--accent);">
+                "شرفت الغرفة! صانع الأساطير ومهندس النظام حاضر الآن لمراقبة هذه المعركة التاريخية بنفسه. استعدوا لأقوى تحدي في مزاد أساطير الكورة!"
+            </p>
+        </div>
+    </div>
+
+    <!-- نافذة الترحيب الخاصة بالأدمن العادي في الأونلاين فقط (تظهر لمدة ثانيتين) -->
+    <div id="admin-welcome-popup-modal" class="admin-welcome-modal">
+        <div class="admin-welcome-card">
+            <div class="crown-icon-animated">🛡️</div>
+            <h2 style="font-size: 17px; color: var(--primary); margin-bottom: 6px;">حضور مشرف مميز للأدمن!</h2>
+            
+            <div style="display: inline-block; background: rgba(0, 255, 135, 0.15); border: 1px solid var(--primary); color: var(--primary); padding: 4px 12px; border-radius: 10px; font-size: 15px; font-weight: bold; margin: 6px 0;" id="popup-admin-name-display">أحمد علي</div>
+            
+            <div style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(135deg, rgba(0, 255, 135, 0.25), rgba(0, 204, 106, 0.25)); border: 1px solid var(--primary); padding: 4px 12px; border-radius: 10px; font-size: 10px; color: var(--primary); font-weight: bold; box-shadow: 0 0 10px rgba(0, 255, 135, 0.4); margin: 6px 0 12px 0;">
+                🛡️ [Official Moderator & Admin]
+            </div>
+
+            <p style="font-size: 11px; line-height: 1.5; color: #c2ffd6; background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 10px; border-right: 3px solid var(--primary);">
+                "أهلاً بك يا بطل! مشرف الغرفة انضم لضمان سير المزاد بأعلى احترافية ونزاهة تكتيكية."
+            </p>
         </div>
     </div>
 
@@ -933,7 +1055,8 @@
             
             <div class="section-card">
                 <div class="section-card-title" style="justify-content: center;">أدخل كود الغرفة</div>
-                <input type="text" id="join-room-code-input" placeholder="1 أو الكود المميز" style="text-align: center; font-size: 20px; letter-spacing: 4px; color: var(--accent); font-weight: bold;">
+                <!-- تم جعل الخانة فارغة تماماً بدون أي أمثلة -->
+                <input type="text" id="join-room-code-input" placeholder="" style="text-align: center; font-size: 20px; letter-spacing: 4px; color: var(--accent); font-weight: bold;">
             </div>
 
             <button class="btn main-btn" onclick="confirmJoinOnlineRoom()">دخول الغرفة 🚀</button>
@@ -1250,7 +1373,6 @@
         let customPlayers = JSON.parse(localStorage.getItem("auction_custom_players")) || [];
         let matchHistory = JSON.parse(localStorage.getItem("auction_match_history")) || [];
         let userSavedName = localStorage.getItem("auction_user_profile_name") || "اللاعب";
-        
         let adminRoleType = localStorage.getItem("auction_admin_role_type") || "";
 
         let playMode = "local"; 
@@ -1334,18 +1456,18 @@
                     adminRoleType = "owner";
                     localStorage.setItem("auction_admin_role_type", "owner");
                     alert("👑 تم تفعيل صلاحيات الأونر أدمن بنجاح!");
-                } else if (adminPass === "153246") {
+                } else if (adminPass === "15753852456999") {
                     adminRoleType = "admin1";
                     localStorage.setItem("auction_admin_role_type", "admin1");
-                    alert("🛡️ تم تفعيل كود الأدمن الأول (غرفة 5) بنجاح!");
-                } else if (adminPass === "729512") {
+                    alert("🛡️ تم تفعيل كود الأدمن الأول (غرفة 22) بنجاح!");
+                } else if (adminPass === "72951222") {
                     adminRoleType = "admin2";
                     localStorage.setItem("auction_admin_role_type", "admin2");
-                    alert("🛡️ تم تفعيل كود الأدمن الثاني (غرفة 6) بنجاح!");
-                } else if (adminPass === "157538524569") {
+                    alert("🛡️ تم تفعيل كود الأدمن الثاني (غرفة 33) بنجاح!");
+                } else if (adminPass === "15324666") {
                     adminRoleType = "admin3";
                     localStorage.setItem("auction_admin_role_type", "admin3");
-                    alert("🛡️ تم تفعيل كود الأدمن الثالث (غرفة 7) بنجاح!");
+                    alert("🛡️ تم تفعيل كود الأدمن الثالث (غرفة 44) بنجاح!");
                 } else {
                     alert("⚠️ كود الأدمن غير صحيح، تم حفظ اسمك كـ مستخدم عادي.");
                 }
@@ -1473,7 +1595,7 @@
                     if (currentServerIndex < peerServersList.length) {
                         setTimeout(() => initPeerJS(customId, callback), 200);
                     } else {
-                        currentServerIndex = 0; // إعادة ضبط للدورة
+                        currentServerIndex = 0;
                         alert("⚠️ عذراً، تم فحص جميع السيرفرات الـ 50 ولم يتم الاستجابة. يرجى إعادة المحاولة.");
                     }
                 });
@@ -1492,11 +1614,11 @@
             if (adminRoleType === "owner") {
                 roomCode = "1";
             } else if (adminRoleType === "admin1") {
-                roomCode = "5";
+                roomCode = "22";
             } else if (adminRoleType === "admin2") {
-                roomCode = "6";
+                roomCode = "33";
             } else if (adminRoleType === "admin3") {
-                roomCode = "7";
+                roomCode = "44";
             } else {
                 roomCode = Math.floor(1000 + Math.random() * 9000).toString();
             }
@@ -1515,7 +1637,6 @@
             });
         }
 
-        // دالة نسخ الغرفة متوافقة تماماً مع أجهزة الأندرويد وإيماءات العودة
         function copyRoomCodeToClipboard() {
             playSound('click');
             let code = onlineState.roomCode;
@@ -1722,6 +1843,7 @@
             gameState.reversedRoundsIndices = indices.slice(0, numReversed);
 
             showScreen('auction-screen');
+            checkAndTriggerWelcomePopups();
             loadNextAuctionRound();
         }
 
@@ -1735,6 +1857,65 @@
 
         function closeAllModals() {
             document.querySelectorAll('.modal').forEach(m => m.style.display = "none");
+        }
+
+        // دالة فحص وعرض واجهات الترحيب (تعمل في الأونلاين فقط ولمدة ثانيتين لكل واجهة، وتدعم عرض الأونر أولاً ثم الأدمن العادي إذا كانا يلعبان معاً)
+        function checkAndTriggerWelcomePopups() {
+            if (playMode !== 'online') return;
+
+            let p1IsOwner = false;
+            let p1IsAdmin = false;
+            let p2IsOwner = false;
+            let p2IsAdmin = false;
+
+            let hostRole = onlineState.isHost ? adminRoleType : remoteAdminRole;
+            let clientRole = onlineState.isHost ? remoteAdminRole : adminRoleType;
+
+            let hostName = onlineState.isHost ? userSavedName : (gameState.p1Name || "اللاعب الأول");
+            let clientName = onlineState.isHost ? (gameState.p2Name || "اللاعب الثاني") : userSavedName;
+
+            if (hostRole === "owner") p1IsOwner = true;
+            else if (hostRole && hostRole.startsWith("admin")) p1IsAdmin = true;
+
+            if (clientRole === "owner") p2IsOwner = true;
+            else if (clientRole && clientRole.startsWith("admin")) p2IsAdmin = true;
+
+            let queue = [];
+
+            if (p1IsOwner) queue.push({ type: 'owner', name: hostName });
+            if (p2IsOwner) queue.push({ type: 'owner', name: clientName });
+
+            if (p1IsAdmin) queue.push({ type: 'admin', name: hostName });
+            if (p2IsAdmin) queue.push({ type: 'admin', name: clientName });
+
+            runWelcomeQueue(queue);
+        }
+
+        function runWelcomeQueue(queue) {
+            if (queue.length === 0) return;
+            let current = queue.shift();
+
+            if (current.type === 'owner') {
+                let ownerModal = document.getElementById("owner-welcome-popup-modal");
+                document.getElementById("popup-owner-name-display").innerText = current.name;
+                ownerModal.style.display = "flex";
+                playSound('success');
+
+                setTimeout(() => {
+                    ownerModal.style.display = "none";
+                    setTimeout(() => { runWelcomeQueue(queue); }, 200);
+                }, 2000);
+            } else if (current.type === 'admin') {
+                let adminModal = document.getElementById("admin-welcome-popup-modal");
+                document.getElementById("popup-admin-name-display").innerText = current.name;
+                adminModal.style.display = "flex";
+                playSound('success');
+
+                setTimeout(() => {
+                    adminModal.style.display = "none";
+                    setTimeout(() => { runWelcomeQueue(queue); }, 200);
+                }, 2000);
+            }
         }
 
         function updateBudgetNotice() {
@@ -1913,12 +2094,19 @@
             if (gameState.refereeMode === "with") {
                 showScreen('referee-setup-screen'); loadRefereeSetupStep();
             } else {
-                showScreen('auction-screen'); loadNextAuctionRound();
+                showScreen('auction-screen');
+                checkAndTriggerWelcomePopups();
+                loadNextAuctionRound();
             }
         }
 
         function loadRefereeSetupStep() {
-            if (gameState.setupRefereeIndex >= gameState.maxRounds) { showScreen('auction-screen'); loadNextAuctionRound(); return; }
+            if (gameState.setupRefereeIndex >= gameState.maxRounds) { 
+                showScreen('auction-screen'); 
+                checkAndTriggerWelcomePopups();
+                loadNextAuctionRound(); 
+                return; 
+            }
             let rIdx = gameState.setupRefereeIndex;
             let currentRole = gameState.roundRoles[rIdx];
             document.getElementById("ref-setup-instruction").innerText = `الدور ${rIdx + 1} (${currentRole})`;
@@ -2012,6 +2200,7 @@
             updateBudgetTitlesAndNames();
             setupAuctionScreenUI(); renderPermanentSquads(); startRoundTimer();
             showScreen('auction-screen');
+            checkAndTriggerWelcomePopups();
         }
 
         function checkActivePlayerBankruptStatus() {
