@@ -891,7 +891,7 @@
         </div>
     </div>
 
-    <!-- نافذة الترحيب الملكية للأونر في الأونلاين فقط (تظهر لمدة ثانيتين) -->
+    <!-- نافذة الترحيب الملكية للأونر في الأونلاين فقط (تظهر مرة واحدة فقط لمدة ثانيتين عند دخول الروم) -->
     <div id="owner-welcome-popup-modal" class="owner-welcome-modal">
         <div class="owner-welcome-card">
             <div class="crown-icon-animated">👑</div>
@@ -909,7 +909,7 @@
         </div>
     </div>
 
-    <!-- نافذة الترحيب الخاصة بالأدمن العادي في الأونلاين فقط (تظهر لمدة ثانيتين) -->
+    <!-- نافذة الترحيب الخاصة بالأدمن العادي في الأونلاين فقط (تظهر مرة واحدة فقط لمدة ثانيتين عند دخول الروم) -->
     <div id="admin-welcome-popup-modal" class="admin-welcome-modal">
         <div class="admin-welcome-card">
             <div class="crown-icon-animated">🛡️</div>
@@ -1055,7 +1055,7 @@
             
             <div class="section-card">
                 <div class="section-card-title" style="justify-content: center;">أدخل كود الغرفة</div>
-                <!-- تم جعل الخانة فارغة تماماً بدون أي أمثلة -->
+                <!-- الخانة فارغة تماماً بدون أي أمثلة -->
                 <input type="text" id="join-room-code-input" placeholder="" style="text-align: center; font-size: 20px; letter-spacing: 4px; color: var(--accent); font-weight: bold;">
             </div>
 
@@ -1374,6 +1374,7 @@
         let matchHistory = JSON.parse(localStorage.getItem("auction_match_history")) || [];
         let userSavedName = localStorage.getItem("auction_user_profile_name") || "اللاعب";
         let adminRoleType = localStorage.getItem("auction_admin_role_type") || "";
+        let hasWelcomedInThisRoom = false;
 
         let playMode = "local"; 
         let onlineState = {
@@ -1501,10 +1502,12 @@
         }
 
         function openCreateRoomSetup() {
+            hasWelcomedInThisRoom = false;
             showScreen('online-create-setup-screen');
         }
 
         function openJoinRoomInput() {
+            hasWelcomedInThisRoom = false;
             showScreen('online-join-input-screen');
         }
 
@@ -1859,9 +1862,9 @@
             document.querySelectorAll('.modal').forEach(m => m.style.display = "none");
         }
 
-        // دالة فحص وعرض واجهات الترحيب (تعمل في الأونلاين فقط ولمدة ثانيتين لكل واجهة، وتدعم عرض الأونر أولاً ثم الأدمن العادي إذا كانا يلعبان معاً)
         function checkAndTriggerWelcomePopups() {
-            if (playMode !== 'online') return;
+            if (playMode !== 'online' || hasWelcomedInThisRoom) return;
+            hasWelcomedInThisRoom = true;
 
             let p1IsOwner = false;
             let p1IsAdmin = false;
@@ -2613,6 +2616,10 @@
         }
 
         function preparePitchEndGameScreen() {
+            // تحديث عناوين الملاعب لتظهر كلمة "ملعب" ثابتة ويليها اسم اللاعب المتغير
+            document.getElementById("pitch-title-p1").innerText = `ملعب ${gameState.p1Name}`;
+            document.getElementById("pitch-title-p2").innerText = `ملعب ${gameState.p2Name}`;
+
             renderPitch("pitch-squad-p1", gameState.p1Squad);
             renderPitch("pitch-squad-p2", gameState.p2Squad);
         }
@@ -2641,13 +2648,13 @@
         function copySquadsToClipboard() {
             playSound('success');
 
-            let text = `⚽ التشكيلة الأولى: ${gameState.p1Name}\n`;
+            let text = `⚽ التشكيلة الأولى (${gameState.p1Name}):\n`;
             gameState.p1Squad.forEach(p => {
                 let priceInfo = p.price ? ` (تم شراؤه بـ ${p.price} مليون)` : ` (لاعب مجاني / ترضية)`;
                 text += `- ${p.name} | المركز: ${p.pos}${priceInfo}\n`;
             });
 
-            text += `\n⚽ التشكيلة الثانية: ${gameState.p2Name}\n`;
+            text += `\n⚽ التشكيلة الثانية (${gameState.p2Name}):\n`;
             gameState.p2Squad.forEach(p => {
                 let priceInfo = p.price ? ` (تم شراؤه بـ ${p.price} مليون)` : ` (لاعب مجاني / ترضية)`;
                 text += `- ${p.name} | المركز: ${p.pos}${priceInfo}\n`;
@@ -2683,6 +2690,7 @@
             if (onlineState.peer) onlineState.peer.destroy();
             onlineState.conn = null;
             onlineState.isHost = false;
+            hasWelcomedInThisRoom = false;
             document.getElementById("top-chat-btn").style.display = "none";
             showScreen('games-hub-screen');
         }
