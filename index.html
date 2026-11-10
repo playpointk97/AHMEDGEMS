@@ -146,12 +146,15 @@
             background: linear-gradient(135deg, rgba(0, 255, 135, 0.1), rgba(0, 0, 0, 0.4));
             border: 2px solid var(--primary);
             border-radius: 16px;
-            padding: 18px;
-            text-align: center;
+            padding: 16px;
+            text-align: right;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-bottom: 12px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .game-selection-card:hover {
@@ -889,7 +892,7 @@
         </div>
     </div>
 
-    <!-- نافذة الترحيب الملكية للأونر في الأونلاين فقط -->
+    <!-- نافذة الترحيب الملكية للأونر (4 ثواني) -->
     <div id="owner-welcome-popup-modal" class="owner-welcome-modal">
         <div class="owner-welcome-card">
             <div class="crown-icon-animated">👑</div>
@@ -907,7 +910,7 @@
         </div>
     </div>
 
-    <!-- نافذة الترحيب الخاصة بالأدمن العادي في الأونلاين فقط -->
+    <!-- نافذة الترحيب الخاصة بالأدمن العادي (2 ثانية) -->
     <div id="admin-welcome-popup-modal" class="admin-welcome-modal">
         <div class="admin-welcome-card">
             <div class="crown-icon-animated">🛡️</div>
@@ -931,10 +934,13 @@
             <h1 style="margin-top: 5px; font-size: 20px;">🎮 مركز الألعاب 🎮</h1>
             <p style="text-align: center; color: #88c29d; font-size: 11px; margin-bottom: 14px;">اختر اللعبة وابدأ التحدي الآن</p>
 
+            <!-- مربع مزاد أساطير الكورة (على اليمين / في الأعلى للوصول السريع) -->
             <div class="game-selection-card" onclick="openAuctionGameSetup()">
-                <div style="font-size: 32px; margin-bottom: 4px;">⚽</div>
-                <h2 style="font-size: 16px; margin-bottom: 3px;">مزاد أساطير الكورة</h2>
-                <p style="font-size: 11px; color: #c2ffd6;">ابنِ فريق أساطيرك الذكي عبر المزادات والتنافس المباشر</p>
+                <div style="font-size: 32px;">⚽</div>
+                <div>
+                    <h2 style="font-size: 15px; margin-bottom: 2px; text-align: right;">مزاد أساطير الكورة</h2>
+                    <p style="font-size: 10px; color: #c2ffd6;">ابنِ فريق أساطيرك الذكي عبر المزادات والتنافس المباشر</p>
+                </div>
             </div>
         </div>
 
@@ -1322,6 +1328,16 @@
         </div>
     </div>
 
+    <!-- نافذة عرض تفاصيل المباراة من السجل -->
+    <div id="history-detail-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeHistoryDetailModal()">&times;</span>
+            <h2 id="history-detail-title" style="font-size: 15px; color: var(--accent);">تفاصيل المباراة</h2>
+            <div id="history-detail-content" style="max-height: 250px; overflow-y: auto;"></div>
+            <button class="btn sub-btn" onclick="closeHistoryDetailModal()" style="margin-top: 10px;">إغلاق</button>
+        </div>
+    </div>
+
     <script>
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
@@ -1501,11 +1517,26 @@
 
         function openCreateRoomSetup() {
             hasWelcomedInThisRoom = false;
+            // ضمان تدمير أي بير قديم لإنشاء غرفة نظيفة تماماً دون تداخل
+            if (onlineState.peer) {
+                try { onlineState.peer.destroy(); } catch(e) {}
+                onlineState.peer = null;
+            }
+            onlineState.conn = null;
+            onlineState.roomCode = "";
+            document.getElementById("room-waiting-box").style.display = "none";
             showScreen('online-create-setup-screen');
         }
 
         function openJoinRoomInput() {
             hasWelcomedInThisRoom = false;
+            if (onlineState.peer) {
+                try { onlineState.peer.destroy(); } catch(e) {}
+                onlineState.peer = null;
+            }
+            onlineState.conn = null;
+            onlineState.roomCode = "";
+            document.getElementById("join-room-code-input").value = "";
             showScreen('online-join-input-screen');
         }
 
@@ -1713,7 +1744,7 @@
             });
 
             onlineState.conn.on('close', () => {
-                alert("⚠️ تم قطع الاتصال مع المنافس.");
+                alert("⚠️ تم قطع الاتصال مع المنافس وغلق الغرفة.");
                 resetToGamesHub();
             });
         }
@@ -1902,16 +1933,18 @@
                 ownerModal.style.display = "flex";
                 playSound('success');
 
+                // التعديل: 4 ثواني للأونر أدمن
                 setTimeout(() => {
                     ownerModal.style.display = "none";
                     setTimeout(() => { runWelcomeQueue(queue); }, 200);
-                }, 2000);
+                }, 4000);
             } else if (current.type === 'admin') {
                 let adminModal = document.getElementById("admin-welcome-popup-modal");
                 document.getElementById("popup-admin-name-display").innerText = current.name;
                 adminModal.style.display = "flex";
                 playSound('success');
 
+                // التعديل: ثانيتين للأدمن العادي
                 setTimeout(() => {
                     adminModal.style.display = "none";
                     setTimeout(() => { runWelcomeQueue(queue); }, 200);
@@ -1956,8 +1989,21 @@
         function closeTextCodeImportModal() { playSound('click'); document.getElementById("text-code-import-modal").style.display = "none"; }
         function openExportModal() { playSound('click'); document.getElementById("export-filename-input").value = "custom_players_" + new Date().toISOString().slice(0, 10); document.getElementById("export-filename-modal").style.display = "flex"; }
         function closeExportModal() { playSound('click'); document.getElementById("export-filename-modal").style.display = "none"; }
-        function openHistoryModal() { playSound('click'); renderMatchHistoryList(); document.getElementById("history-modal").style.display = "flex"; }
-        function closeHistoryModal() { playSound('click'); document.getElementById("history-modal").style.display = "none"; }
+        
+        function openHistoryModal() { 
+            playSound('click'); 
+            renderMatchHistoryList(); 
+            document.getElementById("history-modal").style.display = "flex"; 
+        }
+        function closeHistoryModal() { 
+            playSound('click'); 
+            document.getElementById("history-modal").style.display = "none"; 
+        }
+
+        function closeHistoryDetailModal() {
+            playSound('click');
+            document.getElementById("history-detail-modal").style.display = "none";
+        }
 
         function clearAllHistory() {
             if (confirm("حذف السجل بالكامل؟")) { matchHistory = []; localStorage.removeItem("auction_match_history"); renderMatchHistoryList(); alert("تم التطهير!"); }
@@ -2154,14 +2200,12 @@
             } else {
                 gameState.isCurrentRoundReversed = gameState.reversedRoundsIndices.includes(currentRoundIdx);
                 
-                // تصفية اللاعبين المتاحين في نفس المركز وغير المستخدمين مسبقاً في هذا الجيم
                 let rolePlayers = gameState.activePool.filter(p => p.pos === currentRole && !gameState.usedPlayerNamesInMatch.includes(p.name));
                 if (rolePlayers.length < 2) {
-                    // إذا نفد عدد لاعبي المركز المحدد بدقة، نأخذ من أي مركز آخر لم يتم استخدامه
                     rolePlayers = gameState.activePool.filter(p => !gameState.usedPlayerNamesInMatch.includes(p.name));
                 }
                 if (rolePlayers.length < 2) {
-                    rolePlayers = [...gameState.activePool]; // احتياطي نهائي
+                    rolePlayers = [...gameState.activePool];
                 }
 
                 rolePlayers.sort(() => Math.random() - 0.5);
@@ -2173,7 +2217,6 @@
                 let randHigh = highTier[Math.floor(Math.random() * highTier.length)];
                 let randLow = lowTier[Math.floor(Math.random() * lowTier.length)];
                 
-                // ضمان عدم تكرار نفس اللاعب للدورين معاً
                 if (randHigh.name === randLow.name && rolePlayers.length > 1) {
                     let otherList = rolePlayers.filter(p => p.name !== randHigh.name);
                     if (otherList.length > 0) randLow = otherList[Math.floor(Math.random() * otherList.length)];
@@ -2182,7 +2225,6 @@
                 gameState.activeBidPlayer = gameState.isCurrentRoundReversed ? randLow : randHigh;
                 gameState.activeFreePlayer = gameState.isCurrentRoundReversed ? randHigh : randLow;
 
-                // تسجيل اللاعبين كـ مستخدمين في هذا الجيم لمنع تكرارهم نهائياً
                 gameState.usedPlayerNamesInMatch.push(gameState.activeBidPlayer.name);
                 gameState.usedPlayerNamesInMatch.push(gameState.activeFreePlayer.name);
             }
@@ -2633,6 +2675,14 @@
         }
 
         function preparePitchEndGameScreen() {
+            // إغلاق الغرفة تماماً وتدمير اتصال البير بعد انتهاء الجيم
+            if (onlineState.peer) {
+                try { onlineState.peer.destroy(); } catch(e) {}
+                onlineState.peer = null;
+            }
+            onlineState.conn = null;
+            onlineState.roomCode = "";
+
             document.getElementById("pitch-title-p1").innerText = `ملعب ${gameState.p1Name}`;
             document.getElementById("pitch-title-p2").innerText = `ملعب ${gameState.p2Name}`;
 
@@ -2690,16 +2740,53 @@
         }
 
         function saveMatchToHistory() {
-            matchHistory.unshift({ id: matchHistory.length + 1, date: new Date().toLocaleTimeString(), p1Name: gameState.p1Name, p2Name: gameState.p2Name, p1Squad: [...gameState.p1Squad], p2Squad: [...gameState.p2Squad] });
+            matchHistory.unshift({ 
+                id: matchHistory.length + 1, 
+                date: new Date().toLocaleTimeString(), 
+                p1Name: gameState.p1Name, 
+                p2Name: gameState.p2Name, 
+                p1Squad: [...gameState.p1Squad], 
+                p2Squad: [...gameState.p2Squad] 
+            });
             localStorage.setItem("auction_match_history", JSON.stringify(matchHistory));
         }
 
         function renderMatchHistoryList() {
             let list = document.getElementById("match-history-list");
             list.innerHTML = matchHistory.length === 0 ? `<p style="text-align:center; font-size:11px;">لا توجد مباريات مسجلة.</p>` : "";
-            matchHistory.forEach(m => {
-                list.innerHTML += `<div class="player-item-manage"><span><b>${m.p1Name}</b> VS <b>${m.p2Name}</b></span><span style="font-size:9px;">${m.date}</span></div>`;
+            matchHistory.forEach((m, index) => {
+                list.innerHTML += `
+                    <div class="player-item-manage" style="cursor:pointer;" onclick="openMatchDetail(${index})">
+                        <span><b>${m.p1Name}</b> VS <b>${m.p2Name}</b></span>
+                        <span style="font-size:9px; color:var(--primary);">عرض التشكيلات 📋</span>
+                    </div>`;
             });
+        }
+
+        // عرض تفاصيل المباراة والتشكيلتين عند الضغط على أي عنصر في السجل
+        function openMatchDetail(index) {
+            playSound('click');
+            let m = matchHistory[index];
+            if (!m) return;
+
+            document.getElementById("history-detail-title").innerText = `تشكيلات مباراة: ${m.p1Name} ضد ${m.p2Name}`;
+            let contentBox = document.getElementById("history-detail-content");
+            contentBox.innerHTML = "";
+
+            let p1Html = `<h4 style="color:var(--primary); font-size:11px; margin-top:6px;"> تشكيلة ${m.p1Name}:</h4>`;
+            m.p1Squad.forEach(p => {
+                let priceInfo = p.price ? ` (${p.price}M)` : ` (مجاني)`;
+                p1Html += `<div class="normal-player-badge ${p.status === 'gold' ? 'badge-gold' : 'badge-silver'}"><span>${p.name}</span> <span style="color:var(--primary)">${p.pos} ${priceInfo}</span></div>`;
+            });
+
+            let p2Html = `<h4 style="color:var(--accent); font-size:11px; margin-top:8px;"> تشكيلة ${m.p2Name}:</h4>`;
+            m.p2Squad.forEach(p => {
+                let priceInfo = p.price ? ` (${p.price}M)` : ` (مجاني)`;
+                p2Html += `<div class="normal-player-badge ${p.status === 'gold' ? 'badge-gold' : 'badge-silver'}"><span>${p.name}</span> <span style="color:var(--primary)">${p.pos} ${priceInfo}</span></div>`;
+            });
+
+            contentBox.innerHTML = p1Html + p2Html;
+            document.getElementById("history-detail-modal").style.display = "flex";
         }
 
         function resetToGamesHub() {
