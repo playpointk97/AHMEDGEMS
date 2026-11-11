@@ -65,7 +65,7 @@
             pointer-events: auto;
         }
 
-        .menu-icon, .profile-icon, .chat-icon-btn {
+        .menu-icon, .profile-icon, .chat-icon-btn, .friends-icon-btn {
             font-size: 13px;
             cursor: pointer;
             color: var(--primary);
@@ -81,7 +81,7 @@
             font-weight: bold;
         }
 
-        .menu-icon:hover, .profile-icon:hover, .chat-icon-btn:hover {
+        .menu-icon:hover, .profile-icon:hover, .chat-icon-btn:hover, .friends-icon-btn:hover {
             background: var(--primary);
             color: #051910;
             transform: scale(1.05);
@@ -882,7 +882,10 @@
 <body>
 
     <div class="top-nav-bar">
-        <div class="menu-icon" onclick="openHistoryModal()" title="سجل المباريات">☰ السجل</div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+            <div class="menu-icon" onclick="openHistoryModal()" title="سجل المباريات">☰ السجل</div>
+            <div class="friends-icon-btn" onclick="openFriendsModal()" title="قائمة الأصدقاء والطلبات">👥 الأصدقاء</div>
+        </div>
         <div style="display: flex; gap: 6px; align-items: center;">
             <div id="top-chat-btn" class="chat-icon-btn" onclick="openChatModal()" style="display: none;" title="دردشة الغرفة">💬 الشات</div>
             <div class="profile-icon" onclick="openProfileModal()" title="إعدادات البروفايل" id="top-profile-btn-wrapper" style="display: flex; align-items: center; gap: 5px;">
@@ -928,13 +931,22 @@
         </div>
     </div>
 
+    <!-- نافذة الانتظار ومطابقة المباراة (Matchmaking Modal) -->
+    <div id="matchmaking-modal" class="modal">
+        <div class="modal-content" style="max-width: 320px; text-align: center;">
+            <div id="matchmaking-spinner" style="font-size: 40px; margin-bottom: 10px; animation: spin 1s linear infinite;">⏳</div>
+            <h3 id="matchmaking-title" style="color: var(--accent); margin-bottom: 8px;">جاري المطابقة...</h3>
+            <p id="matchmaking-msg" style="font-size: 11px; color: #c2ffd6; margin-bottom: 15px;">في انتظار موافقة خصمك على طلب المباراة</p>
+            <button class="btn skip-btn" onclick="cancelMatchmaking()" style="padding: 8px; font-size: 12px;">إلغاء ❌</button>
+        </div>
+    </div>
+
     <div class="container">
         <!-- 0. الواجهة الرئيسية الأولى (قائمة الألعاب) -->
         <div id="games-hub-screen" class="screen active">
             <h1 style="margin-top: 5px; font-size: 20px;">🎮 مركز الألعاب 🎮</h1>
             <p style="text-align: center; color: #88c29d; font-size: 11px; margin-bottom: 14px;">اختر اللعبة وابدأ التحدي الآن</p>
 
-            <!-- مربع مزاد أساطير الكورة (على اليمين / في الأعلى للوصول السريع) -->
             <div class="game-selection-card" onclick="openAuctionGameSetup()">
                 <div style="font-size: 32px;">⚽</div>
                 <div>
@@ -1045,8 +1057,15 @@
             
             <div id="room-waiting-box" class="section-card" style="display: none; text-align: center; margin-top:10px;">
                 <div class="status-badge status-waiting" id="online-status-badge">⏳ جارٍ الاتصال بأقوى سيرفر...</div>
-                <p style="font-size: 11px; color: #88c29d;">شارك رقم الغرفة مع صديقك للانضمام:</p>
-                <div class="room-code-box" id="created-room-code-display">1</div>
+                <p style="font-size: 11px; color: #88c29d;" id="room-code-instruction-label">شارك رقم الغرفة مع صديقك للانضمام:</p>
+                
+                <div style="display: flex; gap: 5px; align-items: center; justify-content: center; margin: 8px 0;">
+                    <div class="room-code-box" id="created-room-code-display" style="margin: 0; flex: 1;">1</div>
+                    <button type="button" id="owner-edit-roomcode-btn" class="edit-btn" style="display: none; padding: 12px 14px; font-size: 16px;" onclick="toggleOwnerEditRoomCode()" title="تعديل كود الغرفة">✏️</button>
+                </div>
+                
+                <button id="owner-confirm-custom-code-btn" class="btn main-btn" style="display: none; margin-top: 5px; padding: 8px; font-size: 11px;" onclick="confirmOwnerCustomRoomCode()">موافقة ✔️</button>
+                
                 <button class="btn online-btn" style="margin-top: 5px; padding: 10px; font-size: 12px;" onclick="copyRoomCodeToClipboard()">📋 نسخ رقم الغرفة</button>
             </div>
 
@@ -1059,7 +1078,6 @@
             
             <div class="section-card">
                 <div class="section-card-title" style="justify-content: center;">أدخل كود الغرفة</div>
-                <!-- الخانة فارغة تماماً بدون أي أمثلة -->
                 <input type="text" id="join-room-code-input" placeholder="" style="text-align: center; font-size: 20px; letter-spacing: 4px; color: var(--accent); font-weight: bold;">
             </div>
 
@@ -1184,25 +1202,69 @@
         </div>
     </div>
 
-    <!-- نافذة تعديل البروفايل -->
+    <!-- نافذة الأصدقاء والطلبات المحدثة -->
+    <div id="friends-modal" class="modal">
+        <div class="modal-content" style="max-width: 330px;">
+            <span class="close" onclick="closeFriendsModal()">&times;</span>
+            <h2>👥 الأصدقاء</h2>
+            
+            <div style="display: flex; gap: 4px; margin-bottom: 10px; margin-top: 5px;">
+                <button class="btn main-btn" style="margin-top:0; font-size:10px; padding:6px;" onclick="switchFriendsTab('list')">الأصدقاء</button>
+                <button class="btn online-btn" style="margin-top:0; font-size:10px; padding:6px;" onclick="switchFriendsTab('requests')">الطلبات (<span id="req-count-badge">0</span>)</button>
+                <button class="btn sub-btn" style="margin-top:0; font-size:10px; padding:6px; background:rgba(0,255,135,0.2);" onclick="switchFriendsTab('add')">➕ إضافة صديق</button>
+            </div>
+
+            <!-- تبويب الأصدقاء -->
+            <div id="friend-tab-list" class="friend-tab-content">
+                <h3 style="font-size: 11px; margin-bottom: 5px; text-align: right;">قائمة أصدقائك:</h3>
+                <div id="friends-list-container" style="max-height: 160px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- تبويب الطلبات (تضم طلبات الصداقة + طلبات المباريات) -->
+            <div id="friend-tab-requests" class="friend-tab-content" style="display: none;">
+                <h3 style="font-size: 11px; margin-bottom: 5px; text-align: right;">الطلبات الواردة (صداقة ومباريات):</h3>
+                <div id="friend-requests-container" style="max-height: 160px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- تبويب إضافة صديق -->
+            <div id="friend-tab-add" class="friend-tab-content" style="display: none;">
+                <div class="form-group" style="margin-top: 5px;">
+                    <label>أدخل معرّف الصديق (ID):</label>
+                    <input type="text" id="add-friend-id-input" placeholder="مثال: 123456...">
+                </div>
+                <button class="btn main-btn" style="padding: 8px; font-size: 11px;" onclick="sendFriendRequestAction()">إرسال طلب صداقة ✉️</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل البروفايل المحدثة -->
     <div id="profile-modal" class="modal">
         <div class="modal-content" style="max-width: 300px;">
             <span class="close" onclick="closeProfileModal()">&times;</span>
             <h2>👤 إعدادات البروفايل</h2>
             
             <div class="form-group" style="margin-top: 8px;">
-                <label>اسم اللاعب (للأونلاين):</label>
+                <label>اسم اللاعب:</label>
                 <input type="text" id="user-profile-name-input" placeholder="ادخل اسمك...">
             </div>
 
             <div class="form-group" style="margin-top: 8px;" id="admin-code-group-container">
-                <label>كود الأدمنية (اختياري):</label>
+                <label>كود الأدمنات:</label>
                 <input type="password" id="user-admin-code-input" placeholder="أدخل كود الأدمن أو الأونر..." style="text-align: center; letter-spacing: 2px;">
             </div>
 
-            <div id="admin-status-box" style="display: none; margin-top: 10px; background: rgba(0,0,0,0.4); border: 1px solid var(--accent); padding: 10px; border-radius: 8px; text-align: center;">
-                <p id="admin-status-msg" style="font-size: 11px; color: var(--accent); margin-bottom: 8px; font-weight: bold;"></p>
-                <button class="btn skip-btn" style="margin-top: 0; padding: 6px; font-size: 11px;" onclick="cancelAdminStatus()">إلغاء الصلاحية ❌</button>
+            <div id="admin-status-box" style="display: none; margin-top: 6px; background: rgba(0,0,0,0.4); border: 1px solid var(--accent); padding: 8px; border-radius: 8px; text-align: center;">
+                <p id="admin-status-msg" style="font-size: 10px; color: var(--accent); margin-bottom: 6px; font-weight: bold;"></p>
+                <button class="btn skip-btn" style="margin-top: 0; padding: 4px; font-size: 10px;" onclick="cancelAdminStatus()">إلغاء الصلاحية ❌</button>
+            </div>
+
+            <div class="form-group" style="margin-top: 8px;">
+                <label>معرّف المتصفح (ID):</label>
+                <div style="display: flex; gap: 5px; align-items: center;">
+                    <input type="text" id="user-profile-id-input" readonly style="text-align: center; font-weight: bold; color: var(--accent);">
+                    <button type="button" id="owner-edit-id-btn" class="edit-btn" style="display: none; padding: 8px 10px; font-size: 14px;" onclick="toggleOwnerEditId()" title="تعديل الـ ID">✏️</button>
+                </div>
+                <p id="id-notice-text" style="font-size: 8px; color: #88c29d; margin-top: 2px; text-align: center;"></p>
             </div>
 
             <button class="btn main-btn" style="margin-top: 10px;" onclick="saveUserProfileName()">حفظ الإعدادات 💾</button>
@@ -1388,6 +1450,16 @@
         let matchHistory = JSON.parse(localStorage.getItem("auction_match_history")) || [];
         let userSavedName = localStorage.getItem("auction_user_profile_name") || "اللاعب";
         let adminRoleType = localStorage.getItem("auction_admin_role_type") || "";
+        
+        let persistentBrowserId = localStorage.getItem("auction_user_unique_id_6digits");
+        if (!persistentBrowserId) {
+            persistentBrowserId = Math.floor(100000 + Math.random() * 900000).toString();
+            localStorage.setItem("auction_user_unique_id_6digits", persistentBrowserId);
+        }
+
+        let myFriendsList = JSON.parse(localStorage.getItem("auction_my_friends_list")) || [];
+        let myCombinedRequests = JSON.parse(localStorage.getItem("auction_my_combined_requests")) || [];
+
         let hasWelcomedInThisRoom = false;
 
         let playMode = "local"; 
@@ -1431,10 +1503,23 @@
             playSound('click');
             document.getElementById("user-profile-name-input").value = userSavedName;
             document.getElementById("user-admin-code-input").value = "";
+            document.getElementById("user-profile-id-input").value = persistentBrowserId;
+            // الأونر يمكنه تعديل الـ ID بحرية لأي رقم، والباقي ثابت
+            document.getElementById("user-profile-id-input").readOnly = (adminRoleType !== "owner");
 
             let codeGroup = document.getElementById("admin-code-group-container");
             let statusBox = document.getElementById("admin-status-box");
             let statusMsg = document.getElementById("admin-status-msg");
+            let editIdBtn = document.getElementById("owner-edit-id-btn");
+            let idNotice = document.getElementById("id-notice-text");
+
+            if (adminRoleType === "owner") {
+                editIdBtn.style.display = "inline-block";
+                idNotice.innerText = "صاحب الموقع (Owner) يمكنه تعديل الـ ID الخاص به لأي رقم بدون قيود.";
+            } else {
+                editIdBtn.style.display = "none";
+                idNotice.innerText = "خانة معرّف ثابتة لا يمكن تغييرها.";
+            }
 
             if (adminRoleType !== "") {
                 codeGroup.style.display = "none";
@@ -1457,11 +1542,69 @@
             document.getElementById("profile-modal").style.display = "none";
         }
 
+        function toggleOwnerEditId() {
+            playSound('click');
+            let idInput = document.getElementById("user-profile-id-input");
+            idInput.readOnly = !idInput.readOnly;
+            if (!idInput.readOnly) {
+                idInput.focus();
+                alert("🔓 تم فتح خانة تعديل الـ ID. يمكنك كتابة أي رقم تختاره ثم الضغط على حفظ.");
+            }
+        }
+
+        let originalOwnerRoomCode = "1";
+
+        function toggleOwnerEditRoomCode() {
+            playSound('click');
+            let codeBox = document.getElementById("created-room-code-display");
+            let isReadonly = codeBox.hasAttribute("contenteditable");
+            if (isReadonly) {
+                codeBox.removeAttribute("contenteditable");
+                codeBox.style.border = "2px dashed var(--accent)";
+            } else {
+                codeBox.setAttribute("contenteditable", "true");
+                codeBox.style.border = "2px solid var(--primary)";
+                codeBox.focus();
+                alert("🔓 يمكنك الآن كتابة أي كود غرفة على مزاجك. بعد الانتهاء، اضغط على زر (موافقة ✔️) لحفظ الروم وتفعيلها.");
+            }
+        }
+
+        function confirmOwnerCustomRoomCode() {
+            playSound('success');
+            let codeBox = document.getElementById("created-room-code-display");
+            let newCode = codeBox.innerText.trim();
+            if (!newCode) return alert("⚠️ الرجاء إدخال كود صالح!");
+
+            if (newCode !== originalOwnerRoomCode) {
+                originalOwnerRoomCode = newCode;
+                onlineState.roomCode = newCode;
+
+                // إعادة تهيئة السيرفر بالكود الجديد المخصص
+                currentServerIndex = 0;
+                initPeerJS(newCode, () => {
+                    document.getElementById("online-status-badge").innerText = `🎉 غرفتك جاهزة برقم ${newCode}`;
+                    document.getElementById("room-code-instruction-label").innerText = `غرفتك جاهزة برقم ${newCode} (شارك الكود مع صديقك):`;
+                    document.getElementById("owner-confirm-custom-code-btn").style.display = "none";
+                    codeBox.removeAttribute("contenteditable");
+                    codeBox.style.border = "2px dashed var(--accent)";
+                    alert(`✅ تم توليد الغرفة بنجاح! غرفتك جاهزة برقم ${newCode}`);
+                });
+            } else {
+                alert("الكود الجديد مطابق للكود القديم.");
+            }
+        }
+
         function saveUserProfileName() {
             let typed = document.getElementById("user-profile-name-input").value.trim();
             let adminPass = document.getElementById("user-admin-code-input").value.trim();
+            let typedId = document.getElementById("user-profile-id-input").value.trim();
 
             if (!typed) return alert("الرجاء إدخال اسمك!");
+
+            if (adminRoleType === "owner" && typedId) {
+                persistentBrowserId = typedId;
+                localStorage.setItem("auction_user_unique_id_6digits", persistentBrowserId);
+            }
 
             userSavedName = typed;
             localStorage.setItem("auction_user_profile_name", userSavedName);
@@ -1474,15 +1617,15 @@
                 } else if (adminPass === "15753852456999") {
                     adminRoleType = "admin1";
                     localStorage.setItem("auction_admin_role_type", "admin1");
-                    alert("🛡️ تم تفعيل كود الأدمن الأول (غرفة 22) بنجاح!");
+                    alert("🛡️ تم تفعيل كود الأدمن الأول بنجاح!");
                 } else if (adminPass === "72951222") {
                     adminRoleType = "admin2";
                     localStorage.setItem("auction_admin_role_type", "admin2");
-                    alert("🛡️ تم تفعيل كود الأدمن الثاني (غرفة 33) بنجاح!");
+                    alert("🛡️ تم تفعيل كود الأدمن الثاني بنجاح!");
                 } else if (adminPass === "15324666") {
                     adminRoleType = "admin3";
                     localStorage.setItem("auction_admin_role_type", "admin3");
-                    alert("🛡️ تم تفعيل كود الأدمن الثالث (غرفة 44) بنجاح!");
+                    alert("🛡️ تم تفعيل كود الأدمن الثالث بنجاح!");
                 } else {
                     alert("⚠️ كود الأدمن غير صحيح، تم حفظ اسمك كـ مستخدم عادي.");
                 }
@@ -1502,6 +1645,267 @@
             closeProfileModal();
         }
 
+        function openFriendsModal() {
+            playSound('click');
+            renderFriendsUI();
+            document.getElementById("friends-modal").style.display = "flex";
+        }
+
+        function closeFriendsModal() {
+            playSound('click');
+            document.getElementById("friends-modal").style.display = "none";
+        }
+
+        function switchFriendsTab(tabName) {
+            playSound('click');
+            document.getElementById("friend-tab-list").style.display = (tabName === 'list') ? 'block' : 'none';
+            document.getElementById("friend-tab-requests").style.display = (tabName === 'requests') ? 'block' : 'none';
+            document.getElementById("friend-tab-add").style.display = (tabName === 'add') ? 'block' : 'none';
+        }
+
+        function sendFriendRequestAction() {
+            let targetId = document.getElementById("add-friend-id-input").value.trim();
+            if (!targetId) return alert("⚠️ الرجاء أدخل معرّف صديق صالح!");
+            if (targetId === persistentBrowserId) return alert("⚠️ لا يمكنك إضافة نفسك كصديق!");
+
+            playSound('click');
+            let peerPrefix = "ahmad_auction_app_friends_v6_";
+            let targetFullPeerId = peerPrefix + targetId;
+
+            let tempPeer = new Peer(peerPrefix + persistentBrowserId + "_" + Math.random().toString(36).substring(2,5), peerServersList[0]);
+            tempPeer.on('open', () => {
+                let conn = tempPeer.connect(targetFullPeerId);
+                conn.on('open', () => {
+                    conn.send({
+                        type: 'FRIEND_REQUEST_SEND',
+                        senderId: persistentBrowserId,
+                        senderName: userSavedName
+                    });
+                    alert("✅ تم إرسال طلب الصداقة بنجاح!");
+                    document.getElementById("add-friend-id-input").value = "";
+                    setTimeout(() => tempPeer.destroy(), 1000);
+                });
+                conn.on('error', () => {
+                    alert("⚠️ لم يتم العثور على هذا المعرّف أونلاين حالياً.");
+                    tempPeer.destroy();
+                });
+            });
+        }
+
+        function renderFriendsUI() {
+            let listContainer = document.getElementById("friends-list-container");
+            let reqContainer = document.getElementById("friend-requests-container");
+            document.getElementById("req-count-badge").innerText = myCombinedRequests.length;
+
+            listContainer.innerHTML = myFriendsList.length === 0 ? `<p style="text-align:center; color:#88c29d; font-size:10px;">ليس لديك أصدقاء مضافون بعد.</p>` : "";
+            myFriendsList.forEach((f, idx) => {
+                listContainer.innerHTML += `
+                    <div class="player-item-manage">
+                        <span><b>${f.name}</b></span>
+                        <div>
+                            <button class="edit-btn" onclick="sendMatchInviteToFriend('${f.id}')">إرسال مباراة 🎮</button>
+                            <button class="delete-btn" onclick="removeFriend(${idx})">حذف</button>
+                        </div>
+                    </div>`;
+            });
+
+            reqContainer.innerHTML = myCombinedRequests.length === 0 ? `<p style="text-align:center; color:#88c29d; font-size:10px;">لا توجد طلبات معلقة.</p>` : "";
+            myCombinedRequests.forEach((req, idx) => {
+                if (req.type === 'friend') {
+                    reqContainer.innerHTML += `
+                        <div class="player-item-manage" style="border-color:var(--primary);">
+                            <span><b>[صداقة]</b> ${req.senderName}</span>
+                            <div>
+                                <button class="edit-btn" onclick="acceptFriendRequest(${idx})">قبول ✔️</button>
+                                <button class="delete-btn" onclick="rejectRequest(${idx})">رفض ❌</button>
+                            </div>
+                        </div>`;
+                } else if (req.type === 'match') {
+                    reqContainer.innerHTML += `
+                        <div class="player-item-manage" style="border-color:var(--accent);">
+                            <span><b>[مباراة]</b> تحدي من ${req.senderName}</span>
+                            <div>
+                                <button class="edit-btn" onclick="acceptMatchInvite(${idx})">موافقة ✔️</button>
+                                <button class="delete-btn" onclick="rejectRequest(${idx})">رفض ❌</button>
+                            </div>
+                        </div>`;
+                }
+            });
+        }
+
+        function acceptFriendRequest(index) {
+            playSound('success');
+            let req = myCombinedRequests[index];
+            myCombinedRequests.splice(index, 1);
+            
+            if (!myFriendsList.some(f => f.id === req.senderId)) {
+                myFriendsList.push({ id: req.senderId, name: req.senderName });
+                localStorage.setItem("auction_my_friends_list", JSON.stringify(myFriendsList));
+            }
+            localStorage.setItem("auction_my_combined_requests", JSON.stringify(myCombinedRequests));
+
+            let peerPrefix = "ahmad_auction_app_friends_v6_";
+            let tempPeer = new Peer(peerPrefix + persistentBrowserId + "_acc_" + Math.random().toString(36).substring(2,5), peerServersList[0]);
+            tempPeer.on('open', () => {
+                let conn = tempPeer.connect(peerPrefix + req.senderId);
+                conn.on('open', () => {
+                    conn.send({ type: 'FRIEND_ACCEPTED_ACK', acceptorId: persistentBrowserId, acceptorName: userSavedName });
+                    setTimeout(() => tempPeer.destroy(), 1000);
+                });
+            });
+
+            renderFriendsUI();
+            alert(`✅ تم قبول طلب الصداقة وأصبحتم أصدقاء!`);
+        }
+
+        function rejectRequest(index) {
+            playSound('click');
+            myCombinedRequests.splice(index, 1);
+            localStorage.setItem("auction_my_combined_requests", JSON.stringify(myCombinedRequests));
+            renderFriendsUI();
+        }
+
+        function removeFriend(index) {
+            playSound('click');
+            myFriendsList.splice(index, 1);
+            localStorage.setItem("auction_my_friends_list", JSON.stringify(myFriendsList));
+            renderFriendsUI();
+        }
+
+        let activeMatchRoomCode = "";
+        let matchmakingPeer = null;
+
+        // 1. عند إرسال مباراة لصديق: ينشئ روم في الخلفية بالكود المناسب للصلاحية
+        function sendMatchInviteToFriend(friendId) {
+            playSound('click');
+            closeFriendsModal();
+
+            if (adminRoleType === "owner") {
+                activeMatchRoomCode = "1";
+            } else if (adminRoleType.startsWith("admin")) {
+                activeMatchRoomCode = Math.floor(10 + Math.random() * 90).toString(); // رقمين
+            } else {
+                activeMatchRoomCode = Math.floor(1000 + Math.random() * 9000).toString(); // 4 أرقام
+            }
+
+            // إنشاء الروم في الخلفية كـ Host أونلاين فوراً
+            playMode = 'online';
+            onlineState.roomCode = activeMatchRoomCode;
+            onlineState.isHost = true;
+            onlineState.myPlayerIndex = 1;
+            gameState.p1Name = userSavedName;
+
+            currentServerIndex = 0;
+            initPeerJS(activeMatchRoomCode, () => {
+                // بعد إنشاء الروم بنجاح في الخلفية، نرسل طلب التحدي مع الكود لصديقك
+                showMatchmakingModal("انتظر صديقك...", `تم إنشاء الروم برقم (${activeMatchRoomCode}) في الخلفية. في انتظار موافقة صديقك...`, true);
+
+                let peerPrefix = "ahmad_auction_app_friends_v6_";
+                matchmakingPeer = new Peer(peerPrefix + persistentBrowserId + "_match_" + Math.random().toString(36).substring(2,5), peerServersList[0]);
+
+                matchmakingPeer.on('open', () => {
+                    let conn = matchmakingPeer.connect(peerPrefix + friendId);
+                    conn.on('open', () => {
+                        conn.send({
+                            type: 'MATCH_CHALLENGE_SEND',
+                            senderId: persistentBrowserId,
+                            senderName: userSavedName,
+                            roomCode: activeMatchRoomCode
+                        });
+                    });
+                    conn.on('data', (data) => {
+                        if (data.type === 'MATCH_REJECTED') {
+                            closeMatchmakingModal();
+                            alert("❌ تم رفض طلب المباراة من قِبل خصمك.");
+                            if (matchmakingPeer) matchmakingPeer.destroy();
+                        } else if (data.type === 'MATCH_ACCEPTED') {
+                            closeMatchmakingModal();
+                            if (matchmakingPeer) matchmakingPeer.destroy();
+                            // يبدأ اللعب فوراً لأن الهوست جاهز في الخلفية
+                        }
+                    });
+                });
+            });
+        }
+
+        // 2. عندما يضغط المستقبل "موافقة" على الطلب: يذهب لواجهة الانضمام بالأكواد ويكتب الكود تلقائياً ويضغط دخول
+        function acceptMatchInvite(index) {
+            playSound('success');
+            let req = myCombinedRequests[index];
+            myCombinedRequests.splice(index, 1);
+            localStorage.setItem("auction_my_combined_requests", JSON.stringify(myCombinedRequests));
+            closeFriendsModal();
+
+            // توجيه المستقبل لواجهة الانضمام بالاكواد ووضع الكود المبعوت تلقائياً
+            showScreen('online-join-input-screen');
+            document.getElementById("join-room-code-input").value = req.roomCode;
+            
+            // إعلام المرسل بأن المستقبل وافق
+            let peerPrefix = "ahmad_auction_app_friends_v6_";
+            let tempPeer = new Peer(peerPrefix + persistentBrowserId + "_macc_" + Math.random().toString(36).substring(2,5), peerServersList[0]);
+            tempPeer.on('open', () => {
+                let conn = tempPeer.connect(peerPrefix + req.senderId);
+                conn.on('open', () => {
+                    conn.send({ type: 'MATCH_ACCEPTED', roomCode: req.roomCode });
+                    setTimeout(() => tempPeer.destroy(), 500);
+                });
+            });
+
+            alert(`✅ تم جلب كود الروم (${req.roomCode}) بنجاح في خانة الانضمام! اضغط على زر "دخول الغرفة" للبدء فوراً.`);
+        }
+
+        function showMatchmakingModal(title, msg, showSpinner) {
+            document.getElementById("matchmaking-title").innerText = title;
+            document.getElementById("matchmaking-msg").innerText = msg;
+            document.getElementById("matchmaking-spinner").style.display = showSpinner ? "block" : "none";
+            document.getElementById("matchmaking-modal").style.display = "flex";
+        }
+
+        function closeMatchmakingModal() {
+            document.getElementById("matchmaking-modal").style.display = "none";
+        }
+
+        function cancelMatchmaking() {
+            playSound('click');
+            if (matchmakingPeer) {
+                try { matchmakingPeer.destroy(); } catch(e) {}
+            }
+            closeMatchmakingModal();
+        }
+
+        function initPersistentFriendListener() {
+            let peerPrefix = "ahmad_auction_app_friends_v6_";
+            let myFullId = peerPrefix + persistentBrowserId;
+            let listenerPeer = new Peer(myFullId, peerServersList[0]);
+
+            listenerPeer.on('connection', (conn) => {
+                conn.on('data', (data) => {
+                    if (data.type === 'FRIEND_REQUEST_SEND') {
+                        let exists = myFriendsList.some(f => f.id === data.senderId) || myCombinedRequests.some(r => r.senderId === data.senderId);
+                        if (!exists) {
+                            myCombinedRequests.push({ type: 'friend', senderId: data.senderId, senderName: data.senderName });
+                            localStorage.setItem("auction_my_combined_requests", JSON.stringify(myCombinedRequests));
+                            playSound('success');
+                            alert(`📬 وصلك طلب صداقة جديد من: ${data.senderName}`);
+                        }
+                    } else if (data.type === 'FRIEND_ACCEPTED_ACK') {
+                        if (!myFriendsList.some(f => f.id === data.acceptorId)) {
+                            myFriendsList.push({ id: data.acceptorId, name: data.acceptorName });
+                            localStorage.setItem("auction_my_friends_list", JSON.stringify(myFriendsList));
+                            playSound('success');
+                            alert(`🎉 وافق ${data.acceptorName} على طلب الصداقة وأصبحتم أصدقاء!`);
+                        }
+                    } else if (data.type === 'MATCH_CHALLENGE_SEND') {
+                        myCombinedRequests.push({ type: 'match', senderId: data.senderId, senderName: data.senderName, roomCode: data.roomCode });
+                        localStorage.setItem("auction_my_combined_requests", JSON.stringify(myCombinedRequests));
+                        playSound('success');
+                        alert(`⚽ تحدي مباراة جديد من صديقك ${data.senderName}! تفقد خانة الطلبات.`);
+                    }
+                });
+            });
+        }
+        setTimeout(initPersistentFriendListener, 2000);
+
         function openAuctionGameSetup() {
             showScreen('mode-select-screen');
         }
@@ -1517,7 +1921,6 @@
 
         function openCreateRoomSetup() {
             hasWelcomedInThisRoom = false;
-            // ضمان تدمير أي بير قديم لإنشاء غرفة نظيفة تماماً دون تداخل
             if (onlineState.peer) {
                 try { onlineState.peer.destroy(); } catch(e) {}
                 onlineState.peer = null;
@@ -1525,6 +1928,14 @@
             onlineState.conn = null;
             onlineState.roomCode = "";
             document.getElementById("room-waiting-box").style.display = "none";
+            
+            let editRoomBtn = document.getElementById("owner-edit-roomcode-btn");
+            if (adminRoleType === "owner") {
+                editRoomBtn.style.display = "inline-block";
+            } else {
+                editRoomBtn.style.display = "none";
+            }
+
             showScreen('online-create-setup-screen');
         }
 
@@ -1540,9 +1951,6 @@
             showScreen('online-join-input-screen');
         }
 
-        // ==========================================
-        // نظام الاتصال بـ 50 سيرفر احتياطي تلقائي (Multi-Server Fallback 50 Servers)
-        // ==========================================
         const peerServersList = [
             { host: '0.peerjs.com', port: 443, secure: true, path: '/' },
             { host: 'peerjs.0.peerjs.com', port: 443, secure: true, path: '/' },
@@ -1605,14 +2013,11 @@
             let config = peerServersList[currentServerIndex];
             let peerPrefix = "ahmad_auction_app_multi_v50_";
             let fullId = peerPrefix + customId;
-
-            console.log(`محاولة الاتصال بالسيرفر رقم ${currentServerIndex + 1} من أصل 50 (${config.host})...`);
             
             try {
                 onlineState.peer = new Peer(fullId, config);
 
                 onlineState.peer.on('open', (id) => {
-                    console.log(`تم الاتصال بنجاح عبر السيرفر رقم ${currentServerIndex + 1}`);
                     if (callback) callback(id);
                 });
 
@@ -1622,13 +2027,12 @@
                 });
 
                 onlineState.peer.on('error', (err) => {
-                    console.warn(`فشل السيرفر رقم ${currentServerIndex + 1}:`, err.type);
                     currentServerIndex++;
                     if (currentServerIndex < peerServersList.length) {
                         setTimeout(() => initPeerJS(customId, callback), 200);
                     } else {
                         currentServerIndex = 0;
-                        alert("⚠️ عذراً، تم فحص جميع السيرفرات الـ 50 ولم يتم الاستجابة. يرجى إعادة المحاولة.");
+                        alert("⚠️ كود الغرفة مستخدم بالفعل أو تعذر الاتصال بالسيرفر.");
                     }
                 });
             } catch(e) {
@@ -1645,14 +2049,12 @@
 
             if (adminRoleType === "owner") {
                 roomCode = "1";
-            } else if (adminRoleType === "admin1") {
-                roomCode = "22";
-            } else if (adminRoleType === "admin2") {
-                roomCode = "33";
-            } else if (adminRoleType === "admin3") {
-                roomCode = "44";
+                originalOwnerRoomCode = "1";
+                document.getElementById("owner-confirm-custom-code-btn").style.display = "block";
+            } else if (adminRoleType.startsWith("admin")) {
+                roomCode = Math.floor(10 + Math.random() * 90).toString(); // رقمين
             } else {
-                roomCode = Math.floor(1000 + Math.random() * 9000).toString();
+                roomCode = Math.floor(1000 + Math.random() * 9000).toString(); // 4 أرقام
             }
 
             onlineState.roomCode = roomCode;
@@ -1666,6 +2068,7 @@
             currentServerIndex = 0;
             initPeerJS(roomCode, () => {
                 document.getElementById("online-status-badge").innerText = `⏳ الغرفة جاهزة برقم ${roomCode}! في انتظار انضمام صديقك...`;
+                document.getElementById("room-code-instruction-label").innerText = `شارك رقم الغرفة مع صديقك للانضمام:`;
             });
         }
 
@@ -1673,16 +2076,7 @@
             playSound('click');
             let code = onlineState.roomCode;
             if (!code) return;
-
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(code).then(() => {
-                    alert("تم نسخ رقم الغرفة بنجاح 📋");
-                }).catch(err => {
-                    fallbackCopyTextToClipboard(code);
-                });
-            } else {
-                fallbackCopyTextToClipboard(code);
-            }
+            fallbackCopyTextToClipboard(code);
         }
 
         function fallbackCopyTextToClipboard(text) {
@@ -1698,12 +2092,12 @@
             try {
                 let successful = document.execCommand('copy');
                 if (successful) {
-                    alert("تم نسخ رقم الغرفة بنجاح 📋");
+                    alert("تم النسخ بنجاح 📋");
                 } else {
-                    alert("تعذر النسخ، يرجى نسخه يدوياً.");
+                    alert("تعذر النسخ.");
                 }
             } catch (err) {
-                alert("تعذر النسخ، يرجى نسخه يدوياً.");
+                alert("تعذر النسخ.");
             }
             document.body.removeChild(textArea);
         }
@@ -1849,7 +2243,7 @@
         }
 
         function startAuctionGameHostOnline() {
-            let sourceMode = document.getElementById("online-auction-players-source").value;
+            let sourceMode = document.getElementById("online-auction-players-source") ? document.getElementById("online-auction-players-source").value : "site";
             if (sourceMode === "site") {
                 gameState.activePool = [...siteBasePlayers];
             } else if (sourceMode === "custom") {
@@ -1860,7 +2254,7 @@
             }
 
             gameState.refereeMode = "without";
-            gameState.teamSize = parseInt(document.getElementById("online-team-size").value);
+            gameState.teamSize = document.getElementById("online-team-size") ? parseInt(document.getElementById("online-team-size").value) : 5;
             gameState.startingBudget = gameState.teamSize === 5 ? 100 : 200;
             gameState.p1Budget = gameState.startingBudget; gameState.p2Budget = gameState.startingBudget;
             gameState.currentRound = 1; gameState.maxRounds = gameState.teamSize === 5 ? 5 : 11;
@@ -1933,7 +2327,6 @@
                 ownerModal.style.display = "flex";
                 playSound('success');
 
-                // التعديل: 4 ثواني للأونر أدمن
                 setTimeout(() => {
                     ownerModal.style.display = "none";
                     setTimeout(() => { runWelcomeQueue(queue); }, 200);
@@ -1944,7 +2337,6 @@
                 adminModal.style.display = "flex";
                 playSound('success');
 
-                // التعديل: ثانيتين للأدمن العادي
                 setTimeout(() => {
                     adminModal.style.display = "none";
                     setTimeout(() => { runWelcomeQueue(queue); }, 200);
@@ -2186,7 +2578,21 @@
             document.getElementById("floating-chat-notification").style.display = "none";
 
             if (gameState.currentRound > gameState.maxRounds) {
-                saveMatchToHistory(); preparePitchEndGameScreen(); showScreen('end-game-screen'); return;
+                saveMatchToHistory(); 
+                preparePitchEndGameScreen(); 
+                showScreen('end-game-screen'); 
+                
+                // مهلة 10 ثوانٍ قبل إغلاق الروم نهائياً
+                setTimeout(() => {
+                    if (onlineState.peer) {
+                        try { onlineState.peer.destroy(); } catch(e) {}
+                        onlineState.peer = null;
+                    }
+                    onlineState.conn = null;
+                    onlineState.roomCode = "";
+                }, 10000);
+                
+                return;
             }
             let currentRoundIdx = gameState.currentRound - 1;
             let currentRole = gameState.roundRoles[currentRoundIdx];
@@ -2675,14 +3081,6 @@
         }
 
         function preparePitchEndGameScreen() {
-            // إغلاق الغرفة تماماً وتدمير اتصال البير بعد انتهاء الجيم
-            if (onlineState.peer) {
-                try { onlineState.peer.destroy(); } catch(e) {}
-                onlineState.peer = null;
-            }
-            onlineState.conn = null;
-            onlineState.roomCode = "";
-
             document.getElementById("pitch-title-p1").innerText = `ملعب ${gameState.p1Name}`;
             document.getElementById("pitch-title-p2").innerText = `ملعب ${gameState.p2Name}`;
 
@@ -2728,15 +3126,8 @@
 
             text += `\nتم إجراء مباراة بين هاتين التشكيلتين، في رأيك من الذي يفوز؟ جاوب بإجابة واحدة تشتمل النتيجة.`;
 
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert("تم نسخ التشكيلتين بنجاح! 📋");
-                }).catch(err => {
-                    fallbackCopyTextToClipboard(text);
-                });
-            } else {
-                fallbackCopyTextToClipboard(text);
-            }
+            fallbackCopyTextToClipboard(text);
+            alert("تم نسخ التشكيلتين بنجاح! 📋");
         }
 
         function saveMatchToHistory() {
@@ -2763,7 +3154,6 @@
             });
         }
 
-        // عرض تفاصيل المباراة والتشكيلتين عند الضغط على أي عنصر في السجل
         function openMatchDetail(index) {
             playSound('click');
             let m = matchHistory[index];
