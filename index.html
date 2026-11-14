@@ -892,7 +892,7 @@
         </div>
     </div>
 
-    <!-- نافذة الترحيب الملكية للأونر (4 ثواني) -->
+    <!-- نافذة الترحيب الملكية للأونر -->
     <div id="owner-welcome-popup-modal" class="owner-welcome-modal">
         <div class="owner-welcome-card">
             <div class="crown-icon-animated">👑</div>
@@ -910,7 +910,7 @@
         </div>
     </div>
 
-    <!-- نافذة الترحيب الخاصة بالأدمن العادي (2 ثانية) -->
+    <!-- نافذة الترحيب الخاصة بالأدمن العادي -->
     <div id="admin-welcome-popup-modal" class="admin-welcome-modal">
         <div class="admin-welcome-card">
             <div class="crown-icon-animated">🛡️</div>
@@ -929,12 +929,11 @@
     </div>
 
     <div class="container">
-        <!-- 0. الواجهة الرئيسية الأولى (قائمة الألعاب) -->
+        <!-- 0. الواجهة الرئيسية الأولى -->
         <div id="games-hub-screen" class="screen active">
             <h1 style="margin-top: 5px; font-size: 20px;">🎮 مركز الألعاب 🎮</h1>
             <p style="text-align: center; color: #88c29d; font-size: 11px; margin-bottom: 14px;">اختر اللعبة وابدأ التحدي الآن</p>
 
-            <!-- مربع مزاد أساطير الكورة (على اليمين / في الأعلى للوصول السريع) -->
             <div class="game-selection-card" onclick="openAuctionGameSetup()">
                 <div style="font-size: 32px;">⚽</div>
                 <div>
@@ -944,7 +943,7 @@
             </div>
         </div>
 
-        <!-- 0.1. شاشة اختيار طريقة اللعب لمزاد الأساطير -->
+        <!-- 0.1. شاشة اختيار طريقة اللعب -->
         <div id="mode-select-screen" class="screen">
             <h2>⚽ مزاد أساطير الكورة</h2>
             <p style="text-align: center; color: #88c29d; font-size: 11px; margin-bottom: 12px;">اختر طريقة اللعب المفضلة</p>
@@ -959,7 +958,7 @@
             <button class="btn sub-btn" style="margin-top: 10px;" onclick="showScreen('games-hub-screen')">🔙 العودة للرئيسية</button>
         </div>
 
-        <!-- 1. الشاشة الرئيسية للعب المحلي الأصلي -->
+        <!-- 1. الشاشة الرئيسية للعب المحلي -->
         <div id="local-setup-screen" class="screen">
             <h1 style="margin-top: 5px; font-size: 18px;">📱 اللعب المحلي الأصلي</h1>
             
@@ -1018,12 +1017,19 @@
             <button class="btn sub-btn" onclick="showScreen('mode-select-screen')">🔙 رجوع</button>
         </div>
 
-        <!-- 1.2. شاشة إنشاء الغرفة -->
+        <!-- 1.2. شاشة إنشاء الغرفة (مع خانة مخصصة لكود الغرفة للأونر) -->
         <div id="online-create-setup-screen" class="screen">
             <h2>➕ إنشاء غرفة أونلاين</h2>
 
             <div class="section-card">
                 <div class="section-card-title">⚙️ إعدادات روم الأونلاين</div>
+                
+                <!-- خانة اختيار رقم الغرفة المخصصة للأونر -->
+                <div class="form-group" id="owner-room-code-group" style="display: none; margin-bottom: 8px;">
+                    <label style="color: var(--accent); font-weight: bold;">👑 اختيار رقم الغرفة الخاص (للأونر):</label>
+                    <input type="text" id="owner-custom-room-code-input" placeholder="اكتب أي رقم أو كود تختاره..." style="text-align: center; font-weight: bold; color: var(--accent); font-size: 16px;">
+                </div>
+
                 <div class="form-group">
                     <label>نوع لعيبة المزاد:</label>
                     <select id="online-auction-players-source">
@@ -1059,7 +1065,6 @@
             
             <div class="section-card">
                 <div class="section-card-title" style="justify-content: center;">أدخل كود الغرفة</div>
-                <!-- الخانة فارغة تماماً بدون أي أمثلة -->
                 <input type="text" id="join-room-code-input" placeholder="" style="text-align: center; font-size: 20px; letter-spacing: 4px; color: var(--accent); font-weight: bold;">
             </div>
 
@@ -1169,9 +1174,12 @@
             </div>
         </div>
 
-        <!-- 5. شاشة نهاية المزاد -->
+        <!-- 5. شاشة نهاية المزاد مع مؤقت الغلق -->
         <div id="end-game-screen" class="screen">
             <h2 style="font-size: 15px;">🎉 انتهى المزاد وبناء التشكيلات!</h2>
+            <div id="room-close-timer-badge" class="status-badge status-waiting" style="width: 100%; text-align: center; margin-bottom: 8px; font-size: 11px;">
+                🚪 سيتم غلق الغرفة خلال: 15 ث
+            </div>
             
             <h3 id="pitch-title-p1" style="font-size: 11px; color: var(--primary); margin-bottom: 2px;">ملعب أحمد</h3>
             <div class="football-pitch" id="pitch-squad-p1"></div>
@@ -1202,7 +1210,7 @@
 
             <div id="admin-status-box" style="display: none; margin-top: 10px; background: rgba(0,0,0,0.4); border: 1px solid var(--accent); padding: 10px; border-radius: 8px; text-align: center;">
                 <p id="admin-status-msg" style="font-size: 11px; color: var(--accent); margin-bottom: 8px; font-weight: bold;"></p>
-                <button class="btn skip-btn" style="margin-top: 0; padding: 6px; font-size: 11px;" onclick="cancelAdminStatus()">إلغاء الصلاحية ❌</button>
+                <button class="btn skip-btn" style="margin-top: 0; padding: 6px; font-size: 11px;" onclick="cancelAdminStatus()">إغلاق الصلاحية ❌</button>
             </div>
 
             <button class="btn main-btn" style="margin-top: 10px;" onclick="saveUserProfileName()">حفظ الإعدادات 💾</button>
@@ -1233,8 +1241,7 @@
                     <select id="new-p-tier">
                         <option value="جامد جدا">جامد جداً (أسطوري)</option>
                         <option value="جامد">جامد (قوي)</option>
-                        <option value="ضعيف نسبيا">ضعيف نسبياً</option>
-                        <option value="ضعيف جدا">ضعيف جداً</option>
+                        <option value="ضعيف">ضعيف</option>
                     </select>
                     <select id="new-p-pos">
                         <option value="GK">حارس (GK)</option>
@@ -1328,7 +1335,6 @@
         </div>
     </div>
 
-    <!-- نافذة عرض تفاصيل المباراة من السجل -->
     <div id="history-detail-modal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeHistoryDetailModal()">&times;</span>
@@ -1367,21 +1373,23 @@
         }
 
         const siteBasePlayers = [
-            { name: "تيبو كورتوا", pos: "GK", tier: "جامد" }, { name: "خوان جارسيا", pos: "GK", tier: "ضعيف نسبيا" }, { name: "إدوين فان در سار", pos: "GK", tier: "جامد جدا" }, { name: "ليف ياشين", pos: "GK", tier: "جامد جدا" }, { name: "إيميليانو مارتينيز", pos: "GK", tier: "جامد" }, { name: "أندريه أونانا", pos: "GK", tier: "ضعيف جدا" }, { name: "أندريه لونين", pos: "GK", tier: "ضعيف نسبيا" }, { name: "دافيد رايا", pos: "GK", tier: "جامد" },
-            { name: "مارك كوكوريلا", pos: "RB/LB", tier: "جامد جدا" }, { name: "أليكس جريمالدو", pos: "RB/LB", tier: "ضعيف نسبيا" }, { name: "كافو البرازيلي", pos: "RB/LB", tier: "جامد جدا" }, { name: "مارسيلو جونيور", pos: "RB/LB", tier: "جامد جدا" }, { name: "روبيرتو كارلوس", pos: "RB/LB", tier: "جامد جدا" }, { name: "جوشكو جفارديول", pos: "RB/LB", tier: "ضعيف نسبيا" }, { name: "محمد هاني", pos: "RB/LB", tier: "ضعيف نسبيا" }, { name: "فيديريكو فالفيردي", pos: "RB/LB", tier: "جامد" }, { name: "فيديريكو ديماركو", pos: "RB/LB", tier: "جامد" },
-            { name: "بيدري غونزاليس", pos: "CM", tier: "جامد" }, { name: "سيسك فابريجيز", pos: "CM", tier: "جامد" }, { name: "أندريا بيرلو", pos: "CM", tier: "جامد جدا" }, { name: "جود بيلينغهام", pos: "CM", tier: "جامد" }, { name: "ستيفن جيرارد", pos: "CM", tier: "جامد جدا" }, { name: "تشافي سيمونز", pos: "CM", tier: "ضعيف جدا" }, { name: "جوب بيلينغهام", pos: "CM", tier: "ضعيف جدا" }, { name: "زين الدين زيدان", pos: "CM", tier: "جامد جدا" }, { name: "تشافي هيرنانديز", pos: "CM", tier: "جامد جدا" }, { name: "رود خوليت", pos: "CM", tier: "جامد جدا" }, { name: "إدواردو كامافينغا", pos: "CM", tier: "ضعيف نسبيا" }, { name: "دكلان رايس", pos: "CM", tier: "جامد" }, { name: "اوريليان تشاوميني", pos: "CM", tier: "ضعيف جدا" }, { name: "كيفين دي بروين", pos: "CM", tier: "جامد جدا" }, { name: "إمام عاشور", pos: "CM", tier: "جامد" }, { name: "محمد الشناوي", pos: "GK", tier: "جامد" }, { name: "مصطفى شوبير", pos: "GK", tier: "جامد" },
-            { name: "أليساندرو دل بييرو", pos: "CAM", tier: "جامد جدا" }, { name: "بول سكولز", pos: "CM", tier: "جامد جدا" }, { name: "أندريس إنييستا", pos: "CAM", tier: "جامد جدا" }, { name: "روبرتو باجيو", pos: "CAM", tier: "جامد جدا" }, { name: "برونو فرنانديز", pos: "CAM", tier: "جامد" }, { name: "أردا غولر", pos: "CAM", tier: "جامد" }, { name: "جمال موسيالا", pos: "CM", tier: "ضعيف نسبيا" }, { name: "ايسكو ألاركون", pos: "CAM", tier: "ضعيف جدا" }, { name: "ريان شرقي", pos: "CAM", tier: "جامد" },
-            { name: "جاك جريليش", pos: "ST", tier: "جامد" }, { name: "كيليان مبابي", pos: "ST", tier: "جامد جدا" }, { name: "إيرلينغ هالاند", pos: "ST", tier: "جامد جدا" }, { name: "هاري كين", pos: "ST", tier: "جامد جدا" }, { name: "عثمان ديمبيلي", pos: "ST", tier: "جامد جدا" }, { name: "سون هيونغ مين", pos: "ST", tier: "جامد جدا" }, { name: "حمزة عبد الكريم", pos: "ST", tier: "ضعيف نسبيا" }, { name: "جواو بيدرو", pos: "ST", tier: "ضعيف نسبيا" }, { name: "ليساندرو مارتينيز", pos: "CB", tier: "ضعيف نسبيا" }, { name: "أندري شيفتشينكو", pos: "ST", tier: "جامد جدا" }, { name: "يوهان كرويف", pos: "CAM", tier: "جامد جدا" }, { name: "ديرك كويت", pos: "CM", tier: "جامد" }, { name: "رونالدو الظاهرة", pos: "ST", tier: "جامد جدا" }, { name: "محمد أبو تريكة", pos: "CAM", tier: "جامد جدا" }, { name: "روبرت ليفاندوفسكي", pos: "ST", tier: "جامد" }, { name: "كاريم بنزيما", pos: "ST", tier: "جامد جدا" }, { name: "نغولو كانتي", pos: "CM", tier: "جامد" },
-            { name: "رافينيا دياز", pos: "LW/RW", tier: "جامد" }, { name: "ليونيل ميسي", pos: "LW/RW", tier: "جامد جدا" }, { name: "جاريث بيل", pos: "LW/RW", tier: "جامد جدا" }, { name: "إيدين هازارد", pos: "LW/RW", tier: "جامد جدا" }, { name: "نيمار جونيور", pos: "LW/RW", tier: "جامد جدا" }, { name: "فينيسيوس جونيور", pos: "LW/RW", tier: "جامد" }, { name: "لامين يمال", pos: "LW/RW", tier: "جامد" }, { name: "مايكل أوليسي", pos: "LW/RW", tier: "جامد" }, { name: "حاجي عبد الرزاق", pos: "LW/RW", tier: "جامد" }, { name: "ريكاردو كوارزما", pos: "LW/RW", tier: "جامد" }, { name: "راؤول غونزاليس", pos: "ST", tier: "جامد" }, { name: "بيلي الأساطير", pos: "ST", tier: "جامد جدا" },
-            { name: "ماركينيوس البرازيلي", pos: "CB", tier: "جامد" }, { name: "فيديريكو ديسيا", pos: "CB", tier: "جامد جدا" }, { name: "باولو مالديني", pos: "CB", tier: "جامد جدا" }, { name: "فيرجيل فان دايك", pos: "CB", tier: "جامد جدا" }, { name: "سيرجيو راموس", pos: "CB", tier: "جامد جدا" }, { name: "كارليس بويول", pos: "CB", tier: "جامد جدا" }, { name: "أليساندرو نيستا", pos: "CB", tier: "جامد" }, { name: "دافيد لويس", pos: "CB", tier: "جامد" }, { name: "دين هويسن", pos: "CB", tier: "ضعيف جدا" }, { name: "هاري ماجواير", pos: "CB", tier: "ضعيف جدا" }, { name: "كيم مين جاي", pos: "CB", tier: "ضعيف جدا" }, { name: "ويلفريد سينجو", pos: "CB", tier: "ضعيف نسبيا" }, { name: "ياسر إبراهيم", pos: "CB", tier: "ضعيف نسبيا" }, { name: "محمود المتولي", pos: "CB", tier: "جامد" },
-            { name: "جانلويجي دوناروما", pos: "GK", tier: "جامد" }, { name: "يان أوبلاك", pos: "GK", tier: "جامد جدا" }, { name: "بيتر تشيك", pos: "GK", tier: "جامد جدا" }, { name: "أوليفر كان", pos: "GK", tier: "جامد جدا" }, { name: "ديدا البرازيلي", pos: "GK", tier: "جامد جدا" }, { name: "لوريس كاريوس", pos: "GK", tier: "ضعيف جدا" }, { name: "روبيرت سانشيز", pos: "GK", tier: "ضعيف جدا" }, { name: "مهدي سليمان", pos: "GK", tier: "ضعيف جدا" }, { name: "محمد أبوجبل", pos: "GK", tier: "ضعيف نسبيا" }, { name: "صلاح ربيع", pos: "GK", tier: "ضعيف جدا" },
-            { name: "فرانكو باريزي", pos: "CB", tier: "جامد جدا" }, { name: "فابيو كانافارو", pos: "CB", tier: "جامد جدا" }, { name: "جون تيري", pos: "CB", tier: "جامد جدا" }, { name: "ريو فرديناند", pos: "CB", tier: "جامد جدا" }, { name: "نيمانيا فيديتش", pos: "CB", tier: "جامد جدا" }, { name: "بيبي البرتغالي", pos: "CB", tier: "جامد" }, { name: "أنطونيو روديجر", pos: "CB", tier: "جامد" }, { name: "روبن دياز", pos: "CB", tier: "جامد" }, { name: "ويليام ساليبا", pos: "CB", tier: "جامد" }, { name: "ماتياس دي ليخت", pos: "CB", tier: "جامد" }, { name: "إريك غارسيا", pos: "CB", tier: "ضعيف جدا" }, { name: "كليمنت لينجليه", pos: "CB", tier: "ضعيف جدا" }, { name: "فيكتور ليندلوف", pos: "CB", tier: "ضعيف جدا" }, { name: "صامويل أومتيتي", pos: "CB", tier: "ضعيف جدا" }, { name: "رامي ربيعة", pos: "CB", tier: "ضعيف نسبيا" }, { name: "محمود علاء", pos: "CB", tier: "ضعيف نسبيا" }, { name: "حسام عبد المجيد", pos: "CB", tier: "ضعيف نسبيا" }, { name: "مصطفى الزناري", pos: "CB", tier: "ضعيف جدا" },
-            { name: "فيليب لام", pos: "RB/LB", tier: "جامد جدا" }, { name: "خافيير زانيتي", pos: "RB/LB", tier: "جامد جدا" }, { name: "أشرف حكيمي", pos: "RB/LB", tier: "جامد" }, { name: "كايل ووكر", pos: "RB/LB", tier: "جامد" }, { name: "ألفونسو ديفيس", pos: "RB/LB", tier: "جامد" }, { name: "جواو كانسيلو", pos: "RB/LB", tier: "جامد" }, { name: "أندرو روبيرتسون", pos: "RB/LB", tier: "جامد" }, { name: "عمر كمال", pos: "RB/LB", tier: "ضعيف نسبيا" }, { name: "كريم فؤاد", pos: "RB/LB", tier: "ضعيف نسبيا" }, { name: "محمد شكري", pos: "RB/LB", tier: "ضعيف جدا" }, { name: "سيد عبد الله", pos: "RB/LB", tier: "ضعيف جدا" }, { name: "ماتيو دي شيليو", pos: "RB/LB", tier: "ضعيف جدا" },
-            { name: "باتريك فييرا", pos: "CM", tier: "جامد جدا" }, { name: "يايا توريه", pos: "CM", tier: "جامد جدا" }, { name: "فرانك لامبارد", pos: "CM", tier: "جامد جدا" }, { name: "لوكا مودريتش", pos: "CM", tier: "جامد جدا" }, { name: "توني كروس", pos: "CM", tier: "جامد جدا" }, { name: "رودري هيرنانديز", pos: "CM", tier: "جامد جدا" }, { name: "كلود ماكيليلي", pos: "CM", tier: "جامد جدا" }, { name: "برناردو سيلفا", pos: "CM", tier: "جامد" }, { name: "فرينكي دي يونغ", pos: "CM", tier: "جامد" }, { name: "جوشوا كيميتش", pos: "CM", tier: "جامد" }, { name: "مروان عطية", pos: "CM", tier: "جامد" }, { name: "أليو ديانج", pos: "CM", tier: "جامد" }, { name: "حمدي فتحي", pos: "CM", tier: "جامد" }, { name: "محمد النني", pos: "CM", tier: "ضعيف نسبيا" }, { name: "عمرو السولية", pos: "CM", tier: "ضعيف نسبيا" }, { name: "أحمد قندوسي", pos: "CM", tier: "ضعيف نسبيا" }, { name: "سكوت مكتوميناي", pos: "CM", tier: "ضعيف جدا" }, { name: "دوني فان دي بييك", pos: "CM", tier: "ضعيف جدا" }, { name: "آرثر ميلو", pos: "CM", tier: "ضعيف جدا" }, { name: "تيموي باكايوكو", pos: "CM", tier: "ضعيف جدا" },
-            { name: "كاكا البرازيلي", pos: "CAM", tier: "جامد جدا" }, { name: "رونالدينيو غاوتشو", pos: "CAM", tier: "جامد جدا" }, { name: "فرانشيسكو توتي", pos: "CAM", tier: "جامد جدا" }, { name: "دينيس بيركامب", pos: "CAM", tier: "جامد جدا" }, { name: "ريفالدو فيريرا", pos: "CAM", tier: "جامد جدا" }, { name: "توماس مولر", pos: "CAM", tier: "جامد" }, { name: "مارتن أوديغارد", pos: "CAM", tier: "جامد" }, { name: "وليد سليمان", pos: "CAM", tier: "جامد" }, { name: "عبد الله السعيد", pos: "CAM", tier: "جامد" }, { name: "محمد مجدي أفشة", pos: "CAM", tier: "جامد" }, { name: "صلاح محسن", pos: "CAM", tier: "ضعيف نسبيا" }, { name: "أحمد بلال", pos: "CAM", tier: "ضعيف نسبيا" }, { name: "فيليب كوتينيو", pos: "CAM", tier: "ضعيف جدا" }, { name: "خافيير باستوري", pos: "CAM", tier: "ضعيف جدا" }, { name: "خوان ماتا", pos: "CAM", tier: "ضعيف جدا" },
-            { name: "صامويل إيتو", pos: "LW/RW", tier: "جامد جدا" }, { name: "أريين روبن", pos: "LW/RW", tier: "جامد جدا" }, { name: "فرانك ريبيري", pos: "LW/RW", tier: "جامد جدا" }, { name: "لويس فيغو", pos: "LW/RW", tier: "جامد جدا" }, { name: "بوكايو ساكا", pos: "LW/RW", tier: "جامد" }, { name: "حسين الشحات", pos: "LW/RW", tier: "جامد" }, { name: "بيرسي تاو", pos: "LW/RW", tier: "جامد" }, { name: "محمود كهربا", pos: "LW/RW", tier: "جامد" }, { name: "طاهر محمد طاهر", pos: "LW/RW", tier: "ضعيف نسبيا" }, { name: "رحيم ستيرلينغ", pos: "LW/RW", tier: "ضعيف نسبيا" }, { name: "أنتوني ماتوس", pos: "LW/RW", tier: "ضعيف جدا" }, { name: "جيدون سانشو", pos: "LW/RW", tier: "ضعيف جدا" }, { name: "نيكولاس بيبي", pos: "LW/RW", tier: "ضعيف جدا" },
-            { name: "ماركو فان باستن", pos: "ST", tier: "جامد جدا" }, { name: "تيري هنري", pos: "ST", tier: "جامد جدا" }, { name: "زلاتان إبراهيموفيتش", pos: "ST", tier: "جامد جدا" }, { name: "لويس سواريز", pos: "ST", tier: "جامد جدا" }, { name: "غابرييل باتيستوتا", pos: "ST", tier: "جامد جدا" }, { name: "سيرجيو أغويرو", pos: "ST", tier: "جامد جدا" }, { name: "روماريو دي سوزا", pos: "ST", tier: "جامد جدا" }, { name: "فيكتور أوسيمين", pos: "ST", tier: "جامد" }, { name: "لاوتارو مارتينيز", pos: "ST", tier: "جامد" }, { name: "عماد متعب", pos: "ST", tier: "جامد" }, { name: "أسامواه جيان", pos: "ST", tier: "جامد" }, { name: "محمد شريف", pos: "ST", tier: "ضعيف نسبيا" }, { name: "أنطوني موديست", pos: "ST", tier: "ضعيف جدا" }, { name: "ماريانو دياز", pos: "ST", tier: "ضعيف جدا" }, { name: "لوكا يوفيتش", pos: "ST", tier: "ضعيف جدا" }, { name: "فوت فيغهورست", pos: "ST", tier: "ضعيف جدا" }, { name: "ماريو بالوتيلي", pos: "ST", tier: "ضعيف جدا" },
-            { name: "بيب بيبي", pos: "CB", tier: "ضعيف جدا" }, { name: "محمد عواد", pos: "GK", tier: "ضعيف نسبيا" }, { name: "زياد كمال", pos: "CM", tier: "ضعيف جدا" }, { name: "ناصر ماهر", pos: "CAM", tier: "ضعيف نسبيا" }, { name: "مصطفى زيكو", pos: "LW/RW", tier: "ضعيف نسبيا" }, { name: "جون أوباما", pos: "RB/LB", tier: "ضعيف جدا" }, { name: "موانا الكاميروني", pos: "ST", tier: "ضعيف جدا" }, { name: "ريكاردو كاكا القديم", pos: "CAM", tier: "جامد جدا" }, { name: "بيتر شمايكل الابن", pos: "GK", tier: "ضعيف جدا" }
+            { name: "تيبو كورتوا", pos: "GK", tier: "جامد" }, { name: "خوان جارسيا", pos: "GK", tier: "ضعيف" }, { name: "إدوين فان در سار", pos: "GK", tier: "جامد جدا" }, { name: "ليف ياشين", pos: "GK", tier: "جامد جدا" }, { name: "إيميليانو مارتينيز", pos: "GK", tier: "جامد" }, { name: "أندريه أونانا", pos: "GK", tier: "ضعيف" }, { name: "أندريه لونين", pos: "GK", tier: "ضعيف" }, { name: "دافيد رايا", pos: "GK", tier: "جامد" },
+            { name: "مارك كوكوريلا", pos: "RB/LB", tier: "جامد جدا" }, { name: "أليكس جريمالدو", pos: "RB/LB", tier: "ضعيف" }, { name: "كافو البرازيلي", pos: "RB/LB", tier: "جامد جدا" }, { name: "مارسيلو جونيور", pos: "RB/LB", tier: "جامد جدا" }, { name: "روبيرتو كارلوس", pos: "RB/LB", tier: "جامد جدا" }, { name: "جوشكو جفارديول", pos: "RB/LB", tier: "ضعيف" }, { name: "محمد هاني", pos: "RB/LB", tier: "ضعيف" }, { name: "فيديريكو فالفيردي", pos: "RB/LB", tier: "جامد" }, { name: "فيديريكو ديماركو", pos: "RB/LB", tier: "جامد" },
+            { name: "بيدري غونزاليس", pos: "CM", tier: "جامد" }, { name: "سيسك فابريجيز", pos: "CM", tier: "جامد" }, { name: "أندريا بيرلو", pos: "CM", tier: "جامد جدا" }, { name: "جود بيلينغهام", pos: "CM", tier: "جامد" }, { name: "ستيفن جيرارد", pos: "CM", tier: "جامد جدا" }, { name: "تشافي سيمونز", pos: "CM", tier: "ضعيف" }, { name: "جوب بيلينغهام", pos: "CM", tier: "ضعيف" }, { name: "زين الدين زيدان", pos: "CM", tier: "جامد جدا" }, { name: "تشافي هيرنانديز", pos: "CM", tier: "جامد جدا" }, { name: "رود خوليت", pos: "CM", tier: "جامد جدا" }, { name: "إدواردو كامافينغا", pos: "CM", tier: "ضعيف" }, { name: "دكلان رايس", pos: "CM", tier: "جامد" }, { name: "اوريليان تشاوميني", pos: "CM", tier: "ضعيف" }, { name: "كيفين دي بروين", pos: "CM", tier: "جامد جدا" }, { name: "إمام عاشور", pos: "CM", tier: "جامد" }, { name: "محمد الشناوي", pos: "GK", tier: "جامد" }, { name: "مصطفى شوبير", pos: "GK", tier: "جامد" },
+            { name: "أليساندرو دل بييرو", pos: "CAM", tier: "جامد جدا" }, { name: "بول سكولز", pos: "CM", tier: "جامد جدا" }, { name: "أندريس إنييستا", pos: "CAM", tier: "جامد جدا" }, { name: "روبرتو باجيو", pos: "CAM", tier: "جامد جدا" }, { name: "برونو فرنانديز", pos: "CAM", tier: "جامد" }, { name: "أردا غولر", pos: "CAM", tier: "جامد" }, { name: "جمال موسيالا", pos: "CM", tier: "ضعيف" }, { name: "ايسكو ألاركون", pos: "CAM", tier: "ضعيف" }, { name: "ريان شرقي", pos: "CAM", tier: "جامد" },
+            { name: "رونالدو الظاهرة", pos: "ST", tier: "جامد جدا" }, { name: "تيري هنري", pos: "ST", tier: "جامد جدا" }, { name: "زلاتان إبراهيموفيتش", pos: "ST", tier: "جامد جدا" }, { name: "لويس سواريز", pos: "ST", tier: "جامد جدا" }, { name: "غابرييل باتيستوتا", pos: "ST", tier: "جامد جدا" }, { name: "سيرجيو أغويرو", pos: "ST", tier: "جامد جدا" }, { name: "روماريو دي سوزا", pos: "ST", tier: "جامد جدا" }, { name: "ماركو فان باستن", pos: "ST", tier: "جامد جدا" }, { name: "كيليان مبابي", pos: "ST", tier: "جامد جدا" }, { name: "إيرلينغ هالاند", pos: "ST", tier: "جامد جدا" }, { name: "هاري كين", pos: "ST", tier: "جامد جدا" }, { name: "أندريه شيفتشينكو", pos: "ST", tier: "جامد جدا" }, { name: "بيلي الأساطير", pos: "ST", tier: "جامد جدا" }, { name: "صامويل إيتو", pos: "ST", tier: "جامد جدا" }, { name: "ديدييه دروغبا", pos: "ST", tier: "جامد جدا" },
+            { name: "روبرت ليفاندوفسكي", pos: "ST", tier: "جامد" }, { name: "كاريم بنزيما", pos: "ST", tier: "جامد" }, { name: "عثمان ديمبيلي", pos: "ST", tier: "جامد" }, { name: "سون هيونغ مين", pos: "ST", tier: "جامد" }, { name: "فيكتور أوسيمين", pos: "ST", tier: "جامد" }, { name: "لاوتارو مارتينيز", pos: "ST", tier: "جامد" }, { name: "عماد متعب", pos: "ST", tier: "جامد" }, { name: "أسامواه جيان", pos: "ST", tier: "جامد" }, { name: "جيمي فاردي", pos: "ST", tier: "جامد" }, { name: "روميلو لوكاكو", pos: "ST", tier: "جامد" }, { name: "أوليفييه جيرو", pos: "ST", tier: "جامد" }, { name: "روبرتو فيرمينو", pos: "ST", tier: "جامد" }, { name: "ألكسندر لاكازيت", pos: "ST", tier: "جامد" }, { name: "دوشان فلاهوفيتش", pos: "ST", tier: "جامد" }, { name: "أول واتكينز", pos: "ST", tier: "جامد" },
+            { name: "محمد شريف", pos: "ST", tier: "ضعيف" }, { name: "أنطوني موديست", pos: "ST", tier: "ضعيف" }, { name: "ماريانو دياز", pos: "ST", tier: "ضعيف" }, { name: "لوكا يوفيتش", pos: "ST", tier: "ضعيف" }, { name: "فوت فيغهورست", pos: "ST", tier: "ضعيف" }, { name: "ماريو بالوتيلي", pos: "ST", tier: "ضعيف" }, { name: "جواو بيدرو", pos: "ST", tier: "ضعيف" }, { name: "حمزة عبد الكريم", pos: "ST", tier: "ضعيف" }, { name: "سيموني زازا", pos: "ST", tier: "ضعيف" }, { name: "كريستيان بنتيكي", pos: "ST", tier: "ضعيف" }, { name: "مبيلا دياني", pos: "ST", tier: "ضعيف" }, { name: "أندريا بيتانيا", pos: "ST", tier: "ضعيف" }, { name: "نيكولاس بيبي", pos: "ST", tier: "ضعيف" }, { name: "كاسبر دولبيرغ", pos: "ST", tier: "ضعيف" }, { name: "موانا الكاميروني", pos: "ST", tier: "ضعيف" },
+            { name: "يوهان كرويف", pos: "CAM", tier: "جامد جدا" }, { name: "ديرك كويت", pos: "CM", tier: "جامد" }, { name: "محمد أبو تريكة", pos: "CAM", tier: "جامد جدا" }, { name: "نغولو كانتي", pos: "CM", tier: "جامد" },
+            { name: "رافينيا دياز", pos: "LW/RW", tier: "جامد" }, { name: "ليونيل ميسي", pos: "LW/RW", tier: "جامد جدا" }, { name: "جاريث بيل", pos: "LW/RW", tier: "جامد جدا" }, { name: "إيدين هازارد", pos: "LW/RW", tier: "جامد جدا" }, { name: "نيمار جونيور", pos: "LW/RW", tier: "جامد جدا" }, { name: "فينيسيوس جونيور", pos: "LW/RW", tier: "جامد" }, { name: "لامين يمال", pos: "LW/RW", tier: "جامد" }, { name: "مايكل أوليسي", pos: "LW/RW", tier: "جامد" }, { name: "حاجي عبد الرزاق", pos: "LW/RW", tier: "جامد" }, { name: "ريكاردو كوارزما", pos: "LW/RW", tier: "جامد" }, { name: "راؤول غونزاليس", pos: "ST", tier: "جامد" },
+            { name: "ماركينيوس البرازيلي", pos: "CB", tier: "جامد" }, { name: "فيديريكو ديسيا", pos: "CB", tier: "جامد جدا" }, { name: "باولو مالديني", pos: "CB", tier: "جامد جدا" }, { name: "فيرجيل فان دايك", pos: "CB", tier: "جامد جدا" }, { name: "سيرجيو راموس", pos: "CB", tier: "جامد جدا" }, { name: "كارليس بويول", pos: "CB", tier: "جامد جدا" }, { name: "أليساندرو نيستا", pos: "CB", tier: "جامد" }, { name: "دافيد لويس", pos: "CB", tier: "جامد" }, { name: "دين هويسن", pos: "CB", tier: "ضعيف" }, { name: "هاري ماجواير", pos: "CB", tier: "ضعيف" }, { name: "كيم مين جاي", pos: "CB", tier: "ضعيف" }, { name: "ويلفريد سينجو", pos: "CB", tier: "ضعيف" }, { name: "ياسر إبراهيم", pos: "CB", tier: "ضعيف" }, { name: "محمود المتولي", pos: "CB", tier: "جامد" },
+            { name: "جانلويجي دوناروما", pos: "GK", tier: "جامد" }, { name: "يان أوبلاك", pos: "GK", tier: "جامد جدا" }, { name: "بيتر تشيك", pos: "GK", tier: "جامد جدا" }, { name: "أوليفر كان", pos: "GK", tier: "جامد جدا" }, { name: "ديدا البرازيلي", pos: "GK", tier: "جامد جدا" }, { name: "لوريس كاريوس", pos: "GK", tier: "ضعيف" }, { name: "روبيرت سانشيز", pos: "GK", tier: "ضعيف" }, { name: "مهدي سليمان", pos: "GK", tier: "ضعيف" }, { name: "محمد أبوجبل", pos: "GK", tier: "ضعيف" }, { name: "صلاح ربيع", pos: "GK", tier: "ضعيف" },
+            { name: "فرانكو باريزي", pos: "CB", tier: "جامد جدا" }, { name: "فابيو كانافارو", pos: "CB", tier: "جامد جدا" }, { name: "جون تيري", pos: "CB", tier: "جامد جدا" }, { name: "ريو فرديناند", pos: "CB", tier: "جامد جدا" }, { name: "نيمانيا فيديتش", pos: "CB", tier: "جامد جدا" }, { name: "بيبي البرتغالي", pos: "CB", tier: "جامد" }, { name: "أنطونيو روديجر", pos: "CB", tier: "جامد" }, { name: "روبن دياز", pos: "CB", tier: "جامد" }, { name: "ويليام ساليبا", pos: "CB", tier: "جامد" }, { name: "ماتياس دي ليخت", pos: "CB", tier: "جامد" }, { name: "إريك غارسيا", pos: "CB", tier: "ضعيف" }, { name: "كليمنت لينجليه", pos: "CB", tier: "ضعيف" }, { name: "فيكتور ليندلوف", pos: "CB", tier: "ضعيف" }, { name: "صامويل أومتيتي", pos: "CB", tier: "ضعيف" }, { name: "رامي ربيعة", pos: "CB", tier: "ضعيف" }, { name: "محمود علاء", pos: "CB", tier: "ضعيف" }, { name: "حسام عبد المجيد", pos: "CB", tier: "ضعيف" }, { name: "مصطفى الزناري", pos: "CB", tier: "ضعيف" },
+            { name: "فيليب لام", pos: "RB/LB", tier: "جامد جدا" }, { name: "خافيير زانيتي", pos: "RB/LB", tier: "جامد جدا" }, { name: "أشرف حكيمي", pos: "RB/LB", tier: "جامد" }, { name: "كايل ووكر", pos: "RB/LB", tier: "جامد" }, { name: "ألفونسو ديفيس", pos: "RB/LB", tier: "جامد" }, { name: "جواو كانسيلو", pos: "RB/LB", tier: "جامد" }, { name: "أندرو روبيرتسون", pos: "RB/LB", tier: "جامد" }, { name: "عمر كمال", pos: "RB/LB", tier: "ضعيف" }, { name: "كريم فؤاد", pos: "RB/LB", tier: "ضعيف" }, { name: "محمد شكري", pos: "RB/LB", tier: "ضعيف" }, { name: "سيد عبد الله", pos: "RB/LB", tier: "ضعيف" }, { name: "ماتيو دي شيليو", pos: "RB/LB", tier: "ضعيف" },
+            { name: "باتريك فييرا", pos: "CM", tier: "جامد جدا" }, { name: "يايا توريه", pos: "CM", tier: "جامد جدا" }, { name: "فرانك لامبارد", pos: "CM", tier: "جامد جدا" }, { name: "لوكا مودريتش", pos: "CM", tier: "جامد جدا" }, { name: "توني كروس", pos: "CM", tier: "جامد جدا" }, { name: "رودري هيرنانديز", pos: "CM", tier: "جامد جدا" }, { name: "كلود ماكيليلي", pos: "CM", tier: "جامد جدا" }, { name: "برناردو سيلفا", pos: "CM", tier: "جامد" }, { name: "فرينكي دي يونغ", pos: "CM", tier: "جامد" }, { name: "جوشوا كيميتش", pos: "CM", tier: "جامد" }, { name: "مروان عطية", pos: "CM", tier: "جامد" }, { name: "أليو ديانج", pos: "CM", tier: "جامد" }, { name: "حمدي فتحي", pos: "CM", tier: "جامد" }, { name: "محمد النني", pos: "CM", tier: "ضعيف" }, { name: "عمرو السولية", pos: "CM", tier: "ضعيف" }, { name: "أحمد قندوسي", pos: "CM", tier: "ضعيف" }, { name: "سكوت مكتوميناي", pos: "CM", tier: "ضعيف" }, { name: "دوني فان دي بييك", pos: "CM", tier: "ضعيف" }, { name: "آرثر ميلو", pos: "CM", tier: "ضعيف" }, { name: "تيموي باكايوكو", pos: "CM", tier: "ضعيف" },
+            { name: "كاكا البرازيلي", pos: "CAM", tier: "جامد جدا" }, { name: "رونالدينيو غاوتشو", pos: "CAM", tier: "جامد جدا" }, { name: "فرانشيسكو توتي", pos: "CAM", tier: "جامد جدا" }, { name: "دينيس بيركامب", pos: "CAM", tier: "جامد جدا" }, { name: "ريفالدو فيريرا", pos: "CAM", tier: "جامد جدا" }, { name: "توماس مولر", pos: "CAM", tier: "جامد" }, { name: "مارتن أوديغارد", pos: "CAM", tier: "جامد" }, { name: "وليد سليمان", pos: "CAM", tier: "جامد" }, { name: "عبد الله السعيد", pos: "CAM", tier: "جامد" }, { name: "محمد مجدي أفشة", pos: "CAM", tier: "جامد" }, { name: "صلاح محسن", pos: "CAM", tier: "ضعيف" }, { name: "أحمد بلال", pos: "CAM", tier: "ضعيف" }, { name: "فيليب كوتينيو", pos: "CAM", tier: "ضعيف" }, { name: "خافيير باستوري", pos: "CAM", tier: "ضعيف" }, { name: "خوان ماتا", pos: "CAM", tier: "ضعيف" },
+            { name: "صامويل إيتو", pos: "LW/RW", tier: "جامد جدا" }, { name: "أريين روبن", pos: "LW/RW", tier: "جامد جدا" }, { name: "فرانك ريبيري", pos: "LW/RW", tier: "جامد جدا" }, { name: "لويس فيغو", pos: "LW/RW", tier: "جامد جدا" }, { name: "بوكايو ساكا", pos: "LW/RW", tier: "جامد" }, { name: "حسين الشحات", pos: "LW/RW", tier: "جامد" }, { name: "بيرسي تاو", pos: "LW/RW", tier: "جامد" }, { name: "محمود كهربا", pos: "LW/RW", tier: "جامد" }, { name: "طاهر محمد طاهر", pos: "LW/RW", tier: "ضعيف" }, { name: "رحيم ستيرلينغ", pos: "LW/RW", tier: "ضعيف" }, { name: "أنتوني ماتوس", pos: "LW/RW", tier: "ضعيف" }, { name: "جيدون سانشو", pos: "LW/RW", tier: "ضعيف" }, { name: "نيكولاس بيبي", pos: "LW/RW", tier: "ضعيف" },
+            { name: "بيب بيبي", pos: "CB", tier: "ضعيف" }, { name: "محمد عواد", pos: "GK", tier: "ضعيف" }, { name: "زياد كمال", pos: "CM", tier: "ضعيف" }, { name: "ناصر ماهر", pos: "CAM", tier: "ضعيف" }, { name: "مصطفى زيكو", pos: "LW/RW", tier: "ضعيف" }, { name: "جون أوباما", pos: "RB/LB", tier: "ضعيف" }, { name: "ريكاردو كاكا القديم", pos: "CAM", tier: "جامد جدا" }, { name: "بيتر شمايكل الابن", pos: "GK", tier: "ضعيف" }
         ];
 
         let customPlayers = JSON.parse(localStorage.getItem("auction_custom_players")) || [];
@@ -1407,11 +1415,12 @@
             p1Squad: [], p2Squad: [], usedPlayerNamesInMatch: [], currentAuctionPlayerIndex: 1,
             highestBidAmount: 0, highestBidderIndex: null, hasAnyoneBidInThisRound: false,
             currentSelectedBid: 1, activePool: [],
-            timeLeft: 40, timerInterval: null, announcementTimer1: null, announcementTimer2: null
+            timeLeft: 40, timerInterval: null, announcementTimer1: null, announcementTimer2: null,
+            roomCloseTimer: 15, roomCloseInterval: null
         };
 
         const positionOrder = { "GK": 1, "CB": 2, "RB/LB": 3, "CM": 4, "CAM": 5, "LW/RW": 6, "ST": 7 };
-        const tierWeights = { "جامد جدا": 4, "جامد": 3, "ضعيف نسبيا": 2, "ضعيف جدا": 1 };
+        const tierWeights = { "جامد جدا": 3, "جامد": 2, "ضعيف": 1 };
 
         updateTopProfileDisplay();
 
@@ -1517,7 +1526,6 @@
 
         function openCreateRoomSetup() {
             hasWelcomedInThisRoom = false;
-            // ضمان تدمير أي بير قديم لإنشاء غرفة نظيفة تماماً دون تداخل
             if (onlineState.peer) {
                 try { onlineState.peer.destroy(); } catch(e) {}
                 onlineState.peer = null;
@@ -1525,6 +1533,18 @@
             onlineState.conn = null;
             onlineState.roomCode = "";
             document.getElementById("room-waiting-box").style.display = "none";
+            
+            // إظهار حقل اختيار كود الغرفة المخصص حصرياً للأونر
+            let ownerCodeGroup = document.getElementById("owner-room-code-group");
+            let ownerCustomInput = document.getElementById("owner-custom-room-code-input");
+            
+            if (adminRoleType === "owner") {
+                ownerCodeGroup.style.display = "block";
+                ownerCustomInput.value = Math.floor(1000 + Math.random() * 9000).toString(); // افتراضي مقترح
+            } else {
+                ownerCodeGroup.style.display = "none";
+            }
+
             showScreen('online-create-setup-screen');
         }
 
@@ -1540,9 +1560,6 @@
             showScreen('online-join-input-screen');
         }
 
-        // ==========================================
-        // نظام الاتصال بـ 50 سيرفر احتياطي تلقائي (Multi-Server Fallback 50 Servers)
-        // ==========================================
         const peerServersList = [
             { host: '0.peerjs.com', port: 443, secure: true, path: '/' },
             { host: 'peerjs.0.peerjs.com', port: 443, secure: true, path: '/' },
@@ -1605,14 +1622,11 @@
             let config = peerServersList[currentServerIndex];
             let peerPrefix = "ahmad_auction_app_multi_v50_";
             let fullId = peerPrefix + customId;
-
-            console.log(`محاولة الاتصال بالسيرفر رقم ${currentServerIndex + 1} من أصل 50 (${config.host})...`);
             
             try {
                 onlineState.peer = new Peer(fullId, config);
 
                 onlineState.peer.on('open', (id) => {
-                    console.log(`تم الاتصال بنجاح عبر السيرفر رقم ${currentServerIndex + 1}`);
                     if (callback) callback(id);
                 });
 
@@ -1622,7 +1636,6 @@
                 });
 
                 onlineState.peer.on('error', (err) => {
-                    console.warn(`فشل السيرفر رقم ${currentServerIndex + 1}:`, err.type);
                     currentServerIndex++;
                     if (currentServerIndex < peerServersList.length) {
                         setTimeout(() => initPeerJS(customId, callback), 200);
@@ -1644,7 +1657,11 @@
             let roomCode = "";
 
             if (adminRoleType === "owner") {
-                roomCode = "1";
+                let customTypedCode = document.getElementById("owner-custom-room-code-input").value.trim();
+                if (!customTypedCode) {
+                    return alert("⚠️ يرجى إدخال رقم الغرفة المخصص!");
+                }
+                roomCode = customTypedCode;
             } else if (adminRoleType === "admin1") {
                 roomCode = "22";
             } else if (adminRoleType === "admin2") {
@@ -1882,6 +1899,7 @@
         function showScreen(screenId) {
             playSound('click');
             stopRoundTimer();
+            stopRoomCloseTimer();
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
             closeAllModals();
@@ -1933,7 +1951,6 @@
                 ownerModal.style.display = "flex";
                 playSound('success');
 
-                // التعديل: 4 ثواني للأونر أدمن
                 setTimeout(() => {
                     ownerModal.style.display = "none";
                     setTimeout(() => { runWelcomeQueue(queue); }, 200);
@@ -1944,7 +1961,6 @@
                 adminModal.style.display = "flex";
                 playSound('success');
 
-                // التعديل: ثانيتين للأدمن العادي
                 setTimeout(() => {
                     adminModal.style.display = "none";
                     setTimeout(() => { runWelcomeQueue(queue); }, 200);
@@ -2186,7 +2202,11 @@
             document.getElementById("floating-chat-notification").style.display = "none";
 
             if (gameState.currentRound > gameState.maxRounds) {
-                saveMatchToHistory(); preparePitchEndGameScreen(); showScreen('end-game-screen'); return;
+                saveMatchToHistory(); 
+                preparePitchEndGameScreen(); 
+                showScreen('end-game-screen'); 
+                startRoomCloseTimer(); 
+                return;
             }
             let currentRoundIdx = gameState.currentRound - 1;
             let currentRole = gameState.roundRoles[currentRoundIdx];
@@ -2209,8 +2229,8 @@
                 }
 
                 rolePlayers.sort(() => Math.random() - 0.5);
-                let highTier = rolePlayers.filter(p => (tierWeights[p.tier] || 3) >= 3);
-                let lowTier = rolePlayers.filter(p => (tierWeights[p.tier] || 3) < 3);
+                let highTier = rolePlayers.filter(p => (tierWeights[p.tier] || 2) >= 2);
+                let lowTier = rolePlayers.filter(p => (tierWeights[p.tier] || 2) < 2);
                 if (highTier.length === 0) highTier = rolePlayers;
                 if (lowTier.length === 0) lowTier = rolePlayers;
 
@@ -2295,10 +2315,35 @@
         }
 
         function stopRoundTimer() { if (gameState.timerInterval) { clearInterval(gameState.timerInterval); gameState.timerInterval = null; } }
+        
         function updateTimerDisplay() {
             let tEl = document.getElementById("timer-display");
             tEl.innerText = `⏱️ ${gameState.timeLeft}ث`;
-            tEl.className = gameState.timeLeft <= 10 ? 'timer-badge-box danger' : 'timer-badge-box';
+            tEl.className = gameState.timeLeft <= 5 ? 'timer-badge-box danger' : 'timer-badge-box';
+        }
+
+        function startRoomCloseTimer() {
+            stopRoomCloseTimer();
+            gameState.roomCloseTimer = 15;
+            let badge = document.getElementById("room-close-timer-badge");
+            badge.innerText = `🚪 سيتم غلق الغرفة خلال: 15 ث`;
+
+            gameState.roomCloseInterval = setInterval(() => {
+                gameState.roomCloseTimer--;
+                badge.innerText = `🚪 سيتم غلق الغرفة خلال: ${gameState.roomCloseTimer} ث`;
+                if (gameState.roomCloseTimer <= 0) {
+                    stopRoomCloseTimer();
+                    alert("⚠️ تم غلق الغرفة نهائياً!");
+                    resetToGamesHub();
+                }
+            }, 1000);
+        }
+
+        function stopRoomCloseTimer() {
+            if (gameState.roomCloseInterval) {
+                clearInterval(gameState.roomCloseInterval);
+                gameState.roomCloseInterval = null;
+            }
         }
 
         function handleTimerTimeout() {
@@ -2675,14 +2720,6 @@
         }
 
         function preparePitchEndGameScreen() {
-            // إغلاق الغرفة تماماً وتدمير اتصال البير بعد انتهاء الجيم
-            if (onlineState.peer) {
-                try { onlineState.peer.destroy(); } catch(e) {}
-                onlineState.peer = null;
-            }
-            onlineState.conn = null;
-            onlineState.roomCode = "";
-
             document.getElementById("pitch-title-p1").innerText = `ملعب ${gameState.p1Name}`;
             document.getElementById("pitch-title-p2").innerText = `ملعب ${gameState.p2Name}`;
 
@@ -2763,7 +2800,6 @@
             });
         }
 
-        // عرض تفاصيل المباراة والتشكيلتين عند الضغط على أي عنصر في السجل
         function openMatchDetail(index) {
             playSound('click');
             let m = matchHistory[index];
@@ -2790,10 +2826,14 @@
         }
 
         function resetToGamesHub() {
-            if (onlineState.peer) onlineState.peer.destroy();
+            if (onlineState.peer) {
+                try { onlineState.peer.destroy(); } catch(e) {}
+            }
+            onlineState.peer = null;
             onlineState.conn = null;
             onlineState.isHost = false;
             hasWelcomedInThisRoom = false;
+            stopRoomCloseTimer();
             document.getElementById("top-chat-btn").style.display = "none";
             showScreen('games-hub-screen');
         }
