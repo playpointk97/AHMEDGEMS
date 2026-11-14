@@ -1534,13 +1534,12 @@
             onlineState.roomCode = "";
             document.getElementById("room-waiting-box").style.display = "none";
             
-            // إظهار حقل اختيار كود الغرفة المخصص حصرياً للأونر
             let ownerCodeGroup = document.getElementById("owner-room-code-group");
             let ownerCustomInput = document.getElementById("owner-custom-room-code-input");
             
             if (adminRoleType === "owner") {
                 ownerCodeGroup.style.display = "block";
-                ownerCustomInput.value = Math.floor(1000 + Math.random() * 9000).toString(); // افتراضي مقترح
+                ownerCustomInput.value = Math.floor(1000 + Math.random() * 9000).toString();
             } else {
                 ownerCodeGroup.style.display = "none";
             }
@@ -1896,18 +1895,46 @@
             loadNextAuctionRound();
         }
 
-        function showScreen(screenId) {
+        // === تعديل دالة showScreen لدعم زر الرجوع والسحب الجانبي ===
+        function showScreen(screenId, pushHistory = true) {
             playSound('click');
             stopRoundTimer();
             stopRoomCloseTimer();
+            
+            if (pushHistory && window.location.hash !== `#${screenId}`) {
+                history.pushState({ screenId: screenId }, "", `#${screenId}`);
+            }
+
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
+            let targetScreen = document.getElementById(screenId);
+            if (targetScreen) {
+                targetScreen.classList.add('active');
+            }
             closeAllModals();
         }
 
         function closeAllModals() {
             document.querySelectorAll('.modal').forEach(m => m.style.display = "none");
         }
+
+        // === استقبال أحداث زر الرجوع في المتصفح / الموبايل ===
+        window.addEventListener('popstate', function(event) {
+            closeAllModals();
+            stopRoundTimer();
+            stopRoomCloseTimer();
+
+            if (event.state && event.state.screenId) {
+                showScreen(event.state.screenId, false);
+            } else {
+                showScreen('games-hub-screen', false);
+            }
+        });
+
+        window.addEventListener('load', function() {
+            if (!window.location.hash) {
+                history.replaceState({ screenId: 'games-hub-screen' }, "", '#games-hub-screen');
+            }
+        });
 
         function checkAndTriggerWelcomePopups() {
             if (playMode !== 'online' || hasWelcomedInThisRoom) return;
@@ -2656,6 +2683,9 @@
         }
 
         function finishAnnouncementAndNext() {
+            // === ضمان عدم زيادة العداد بشكل خاطئ للـ Client في الأونلاين ===
+            if (playMode === 'online' && !onlineState.isHost) return;
+
             showScreen('auction-screen'); gameState.currentRound++; loadNextAuctionRound();
         }
 
