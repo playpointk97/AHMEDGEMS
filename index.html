@@ -631,10 +631,29 @@
             background: rgba(5, 20, 12, 0.95);
             border: 2px solid var(--accent);
             border-radius: 14px;
-            padding: 18px;
+            padding: 14px;
             text-align: center;
             margin-top: 8px;
             cursor: pointer;
+        }
+
+        .announcement-sub-box {
+            background: rgba(0, 0, 0, 0.45);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 12.5px;
+            line-height: 1.5;
+            color: #fff;
+        }
+
+        .announcement-sub-box.winner-box {
+            border: 1.5px solid var(--accent);
+        }
+
+        .announcement-sub-box.loser-box {
+            border: 1.5px solid var(--primary);
+            margin-bottom: 0;
         }
 
         .highlight-name-box {
@@ -642,7 +661,7 @@
             background: rgba(0, 255, 135, 0.15);
             border: 2px solid var(--primary);
             color: var(--primary);
-            padding: 3px 10px;
+            padding: 2px 8px;
             border-radius: 8px;
             font-weight: bold;
             margin: 2px;
@@ -653,7 +672,7 @@
             background: rgba(255, 204, 0, 0.15);
             border: 2px solid var(--accent);
             color: var(--accent);
-            padding: 3px 10px;
+            padding: 2px 8px;
             border-radius: 8px;
             font-weight: bold;
             margin: 2px;
@@ -1157,20 +1176,13 @@
             </div>
         </div>
 
-        <!-- 4. شاشات الإعلان -->
+        <!-- 4. شاشة الإعلان الموحدة (واجهة واحدة فقط بمربعين) -->
         <div id="announcement-screen-1" class="screen">
             <div class="announcement-card" onclick="skipAnnouncement1()">
-                <h3 style="color: var(--primary); margin-bottom: 6px; font-size: 16px;">🏆 نتيجة المزاد</h3>
-                <p id="announcement-text-1" style="font-size: 13px; line-height: 1.5; color: #fff;"></p>
+                <h3 style="color: var(--primary); margin-bottom: 10px; font-size: 16px;">🏆 نتيجة المزاد</h3>
+                <div id="announcement-winner-box" class="announcement-sub-box winner-box"></div>
+                <div id="announcement-loser-box" class="announcement-sub-box loser-box"></div>
                 <p style="font-size: 9px; color: var(--accent); margin-top: 10px; font-weight: bold;">(اضغط للتخطي ⏩)</p>
-            </div>
-        </div>
-
-        <div id="announcement-screen-2" class="screen">
-            <div class="announcement-card" style="border-color: var(--primary);" onclick="skipAnnouncement2()">
-                <h3 style="color: var(--accent); margin-bottom: 6px; font-size: 16px;">📉 تفاصيل الترضية</h3>
-                <p id="announcement-text-2" style="font-size: 13px; line-height: 1.5; color: #fff;"></p>
-                <p style="font-size: 9px; color: var(--primary); margin-top: 10px; font-weight: bold;">(اضغط للتخطي ⏩)</p>
             </div>
         </div>
 
@@ -1397,6 +1409,7 @@
         let userSavedName = localStorage.getItem("auction_user_profile_name") || "اللاعب";
         let adminRoleType = localStorage.getItem("auction_admin_role_type") || "";
         let hasWelcomedInThisRoom = false;
+        let isGameInProgress = false;
 
         let playMode = "local"; 
         let onlineState = {
@@ -1415,7 +1428,7 @@
             p1Squad: [], p2Squad: [], usedPlayerNamesInMatch: [], currentAuctionPlayerIndex: 1,
             highestBidAmount: 0, highestBidderIndex: null, hasAnyoneBidInThisRound: false,
             currentSelectedBid: 1, activePool: [],
-            timeLeft: 40, timerInterval: null, announcementTimer1: null, announcementTimer2: null,
+            timeLeft: 40, timerInterval: null, announcementTimer1: null,
             roomCloseTimer: 15, roomCloseInterval: null
         };
 
@@ -1635,6 +1648,7 @@
                 });
 
                 onlineState.peer.on('error', (err) => {
+                    if (isGameInProgress) return;
                     currentServerIndex++;
                     if (currentServerIndex < peerServersList.length) {
                         setTimeout(() => initPeerJS(customId, callback), 200);
@@ -1644,6 +1658,7 @@
                     }
                 });
             } catch(e) {
+                if (isGameInProgress) return;
                 currentServerIndex++;
                 if (currentServerIndex < peerServersList.length) {
                     initPeerJS(customId, callback);
@@ -1749,7 +1764,15 @@
                 playSound('success');
                 document.getElementById("top-chat-btn").style.display = "flex";
                 if (onlineState.isHost) {
-                    sendOnlineData({ type: 'JOIN_RESPONSE', p1Name: gameState.p1Name, hostAdminRole: adminRoleType });
+                    if (isGameInProgress) {
+                        sendOnlineData({
+                            type: 'SYNC_ROUND_DATA',
+                            gameState: gameState,
+                            hostAdminRole: adminRoleType
+                        });
+                    } else {
+                        sendOnlineData({ type: 'JOIN_RESPONSE', p1Name: gameState.p1Name, hostAdminRole: adminRoleType });
+                    }
                 } else {
                     sendOnlineData({ type: 'CLIENT_JOINED', p2Name: gameState.p2Name, clientAdminRole: adminRoleType });
                 }
@@ -1760,14 +1783,19 @@
             });
 
             onlineState.conn.on('close', () => {
-                alert("⚠️ تم قطع الاتصال مع المنافس وغلق الغرفة.");
-                resetToGamesHub();
+                // في حالة خروج المنافس من المتصفح، لا يتم غلق الغرفة وتستمر اللعبة بشكل طبيعي
+                if (!isGameInProgress) {
+                    alert("⚠️ تم قطع الاتصال مع المنافس وغلق الغرفة.");
+                    resetToGamesHub();
+                }
             });
         }
 
         function sendOnlineData(data) {
             if (onlineState.conn && onlineState.conn.open) {
-                onlineState.conn.send(data);
+                try {
+                    onlineState.conn.send(data);
+                } catch(e) {}
             }
         }
 
@@ -1777,9 +1805,17 @@
             if (data.type === 'CLIENT_JOINED') {
                 gameState.p2Name = data.p2Name;
                 remoteAdminRole = data.clientAdminRole;
-                sendOnlineData({ type: 'HOST_START_GAME_CONFIG', p1Name: gameState.p1Name, hostAdminRole: adminRoleType });
                 document.getElementById("top-chat-btn").style.display = "flex";
-                startAuctionGameHostOnline();
+                if (isGameInProgress) {
+                    sendOnlineData({
+                        type: 'SYNC_ROUND_DATA',
+                        gameState: gameState,
+                        hostAdminRole: adminRoleType
+                    });
+                } else {
+                    sendOnlineData({ type: 'HOST_START_GAME_CONFIG', p1Name: gameState.p1Name, hostAdminRole: adminRoleType });
+                    startAuctionGameHostOnline();
+                }
             } else if (data.type === 'JOIN_RESPONSE' || data.type === 'HOST_START_GAME_CONFIG') {
                 gameState.p1Name = data.p1Name;
                 remoteAdminRole = data.hostAdminRole;
@@ -1890,9 +1926,16 @@
             indices.sort(() => Math.random() - 0.5);
             gameState.reversedRoundsIndices = indices.slice(0, numReversed);
 
+            isGameInProgress = true;
+            lockBackNavigation();
             showScreen('auction-screen');
             checkAndTriggerWelcomePopups();
             loadNextAuctionRound();
+        }
+
+        // === قفل زر الرجوع عند بدء الجيم ===
+        function lockBackNavigation() {
+            history.pushState({ lockedGame: true }, "", window.location.href);
         }
 
         // === تعديل دالة showScreen لدعم زر الرجوع والسحب الجانبي ===
@@ -1901,7 +1944,7 @@
             stopRoundTimer();
             stopRoomCloseTimer();
             
-            if (pushHistory && window.location.hash !== `#${screenId}`) {
+            if (pushHistory && !isGameInProgress && window.location.hash !== `#${screenId}`) {
                 history.pushState({ screenId: screenId }, "", `#${screenId}`);
             }
 
@@ -1917,8 +1960,13 @@
             document.querySelectorAll('.modal').forEach(m => m.style.display = "none");
         }
 
-        // === استقبال أحداث زر الرجوع في المتصفح / الموبايل ===
+        // === استقبال أحداث زر الرجوع في المتصفح / الموبايل (أندرويد وآيفون) ===
         window.addEventListener('popstate', function(event) {
+            if (isGameInProgress) {
+                history.pushState({ lockedGame: true }, "", window.location.href);
+                return;
+            }
+
             closeAllModals();
             stopRoundTimer();
             stopRoomCloseTimer();
@@ -2179,6 +2227,8 @@
                 gameState.reversedRoundsIndices = indices.slice(0, numReversed);
             }
 
+            isGameInProgress = true;
+            lockBackNavigation();
             updateBudgetTitlesAndNames();
             gameState.predefinedRounds = []; gameState.setupRefereeIndex = 0;
             if (gameState.refereeMode === "with") {
@@ -2229,6 +2279,7 @@
             document.getElementById("floating-chat-notification").style.display = "none";
 
             if (gameState.currentRound > gameState.maxRounds) {
+                isGameInProgress = false;
                 saveMatchToHistory(); 
                 preparePitchEndGameScreen(); 
                 showScreen('end-game-screen'); 
@@ -2296,7 +2347,7 @@
                 });
             }
 
-            checkActivePlayerBankruptStatus();
+            if (checkActivePlayerBankruptStatus()) return;
 
             setupAuctionScreenUI(); renderPermanentSquads(); startRoundTimer();
         }
@@ -2305,6 +2356,8 @@
             if (data.hostAdminRole !== undefined) {
                 remoteAdminRole = data.hostAdminRole;
             }
+            isGameInProgress = true;
+            lockBackNavigation();
             Object.assign(gameState, data.gameState);
             updateBudgetTitlesAndNames();
             setupAuctionScreenUI(); renderPermanentSquads(); startRoundTimer();
@@ -2329,7 +2382,9 @@
                     gameState.hasAnyoneBidInThisRound = true;
                     finalizeInteractiveAuction();
                 }
+                return true;
             }
+            return false;
         }
 
         function startRoundTimer() {
@@ -2646,47 +2701,29 @@
             renderPermanentSquads(); playSound('success');
             
             showScreen('announcement-screen-1');
-            document.getElementById("announcement-text-1").innerHTML = `أعطى <span class="highlight-name-box">${activeName}</span> اللاعب <span class="highlight-player-box">${gameState.activeBidPlayer.name}</span> للخصم <span class="highlight-name-box">${opponentName}</span>، وأخذ اللاعب البديل المجاني <span class="highlight-player-box">${gameState.activeFreePlayer.name}</span>.`;
+            document.getElementById("announcement-winner-box").innerHTML = `أعطى <span class="highlight-name-box">${activeName}</span> اللاعب <span class="highlight-player-box">${gameState.activeBidPlayer.name}</span> للخصم <span class="highlight-name-box">${opponentName}</span> (${buyoutCost}M)`;
+            document.getElementById("announcement-loser-box").innerHTML = `وأخذ <span class="highlight-name-box">${activeName}</span> اللاعب المجاني <span class="highlight-player-box">${gameState.activeFreePlayer.name}</span>`;
 
             if (gameState.announcementTimer1) clearTimeout(gameState.announcementTimer1);
             gameState.announcementTimer1 = setTimeout(() => {
-                showSecondAnnouncementBuyout();
-            }, 3000);
-        }
-
-        function showSecondAnnouncementBuyout() {
-            showScreen('announcement-screen-2');
-            document.getElementById("announcement-text-2").innerHTML = `🔄 تمت عملية التخطي الاستراتيجي لهذا الدور بنجاح!`;
-            if (gameState.announcementTimer2) clearTimeout(gameState.announcementTimer2);
-            gameState.announcementTimer2 = setTimeout(() => {
                 finishAnnouncementAndNext();
-            }, 3000);
+            }, 2000);
         }
 
         function skipAnnouncement1() { 
             if (gameState.announcementTimer1) clearTimeout(gameState.announcementTimer1); 
-            goToAnnouncement2OrNext(); 
-        }
-
-        function skipAnnouncement2() { 
-            if (gameState.announcementTimer2) clearTimeout(gameState.announcementTimer2); 
             finishAnnouncementAndNext(); 
         }
 
-        function goToAnnouncement2OrNext() {
-            showScreen('announcement-screen-2');
-            document.getElementById("announcement-text-2").innerHTML = `📉 تمت عملية تسليم اللاعبين بنجاح!`;
-            if (gameState.announcementTimer2) clearTimeout(gameState.announcementTimer2);
-            gameState.announcementTimer2 = setTimeout(() => {
-                finishAnnouncementAndNext();
-            }, 3000);
-        }
-
         function finishAnnouncementAndNext() {
-            // === ضمان عدم زيادة العداد بشكل خاطئ للـ Client في الأونلاين ===
-            if (playMode === 'online' && !onlineState.isHost) return;
+            if (playMode === 'online' && !onlineState.isHost) {
+                showScreen('auction-screen');
+                return;
+            }
 
-            showScreen('auction-screen'); gameState.currentRound++; loadNextAuctionRound();
+            showScreen('auction-screen'); 
+            gameState.currentRound++; 
+            loadNextAuctionRound();
         }
 
         function finalizeInteractiveAuction() {
@@ -2713,23 +2750,16 @@
 
             renderPermanentSquads(); playSound('success');
 
+            let loserCostText = loserIsBankrupt ? `(مجاناً 0M لعدم وجود رصيد)` : `(بـ 1M)`;
+
             showScreen('announcement-screen-1');
-            document.getElementById("announcement-text-1").innerHTML = `فاز اللاعب <span class="highlight-name-box">${winnerName}</span> بالمزاد وأخذ اللاعب <span class="highlight-player-box">${gameState.activeBidPlayer.name}</span> بـ ${gameState.highestBidAmount}M.`;
+            document.getElementById("announcement-winner-box").innerHTML = `🏆 الفائز بالمزاد: <span class="highlight-name-box">${winnerName}</span><br>أخذ اللاعب: <span class="highlight-player-box">${gameState.activeBidPlayer.name}</span> (${gameState.highestBidAmount}M)`;
+            document.getElementById("announcement-loser-box").innerHTML = `📉 الخاسر: <span class="highlight-name-box">${loserName}</span><br>أخذ اللاعب المجاني: <span class="highlight-player-box">${gameState.activeFreePlayer.name}</span> ${loserCostText}`;
 
             if (gameState.announcementTimer1) clearTimeout(gameState.announcementTimer1);
             gameState.announcementTimer1 = setTimeout(() => {
-                showSecondAnnouncementAfterBid(loserName, gameState.activeFreePlayer.name);
-            }, 3000);
-        }
-
-        function showSecondAnnouncementAfterBid(loserName, freePlayerName) {
-            showScreen('announcement-screen-2');
-            document.getElementById("announcement-text-2").innerHTML = `الخاسر <span class="highlight-name-box">${loserName}</span> خسر المزاد في هذا الدور، وأخذ اللاعب المجاني <span class="highlight-player-box">${freePlayerName}</span>.`;
-
-            if (gameState.announcementTimer2) clearTimeout(gameState.announcementTimer2);
-            gameState.announcementTimer2 = setTimeout(() => {
                 finishAnnouncementAndNext();
-            }, 3000);
+            }, 2000);
         }
 
         function renderPermanentSquads() {
@@ -2856,6 +2886,7 @@
         }
 
         function resetToGamesHub() {
+            isGameInProgress = false;
             if (onlineState.peer) {
                 try { onlineState.peer.destroy(); } catch(e) {}
             }
