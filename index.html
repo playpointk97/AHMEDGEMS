@@ -87,6 +87,28 @@
             transform: scale(1.05);
         }
 
+        .withdraw-icon-btn {
+            font-size: 13px;
+            cursor: pointer;
+            color: #ff6b6b;
+            background: rgba(40, 10, 10, 0.88);
+            padding: 6px 10px;
+            border-radius: 10px;
+            border: 2px solid #ff4d4d;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: bold;
+        }
+
+        .withdraw-icon-btn:hover {
+            background: #ff4d4d;
+            color: #fff;
+            transform: scale(1.05);
+        }
+
         .container {
             width: 100%;
             max-width: 440px;
@@ -634,7 +656,33 @@
             padding: 14px;
             text-align: center;
             margin-top: 8px;
-            cursor: pointer;
+        }
+
+        .cooldown-card {
+            background: linear-gradient(145deg, rgba(10, 42, 26, 0.96), rgba(5, 18, 11, 0.98));
+            border: 2px solid var(--primary);
+            border-radius: 18px;
+            padding: 24px 16px;
+            text-align: center;
+            margin-top: 8px;
+            box-shadow: 0 0 25px rgba(0, 255, 135, 0.25), inset 0 0 15px rgba(255, 204, 0, 0.1);
+        }
+
+        .cooldown-number-circle {
+            width: 68px;
+            height: 68px;
+            margin: 12px auto;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 204, 0, 0.25) 0%, rgba(0, 255, 135, 0.12) 100%);
+            border: 2.5px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            font-weight: bold;
+            color: var(--accent);
+            box-shadow: 0 0 18px rgba(255, 204, 0, 0.45);
+            animation: pulseTimer 0.55s infinite alternate;
         }
 
         .announcement-sub-box {
@@ -903,6 +951,7 @@
     <div class="top-nav-bar">
         <div class="menu-icon" onclick="openHistoryModal()" title="سجل المباريات">☰ السجل</div>
         <div style="display: flex; gap: 6px; align-items: center;">
+            <div id="top-withdraw-btn" class="withdraw-icon-btn" onclick="withdrawFromMatch()" style="display: none;" title="الانسحاب من المباراة">🏳️ انسحاب</div>
             <div id="top-chat-btn" class="chat-icon-btn" onclick="openChatModal()" style="display: none;" title="دردشة الغرفة">💬 الشات</div>
             <div class="profile-icon" onclick="openProfileModal()" title="إعدادات البروفايل" id="top-profile-btn-wrapper" style="display: flex; align-items: center; gap: 5px;">
                 👤 <span id="top-profile-name-display">اللاعب</span>
@@ -1176,13 +1225,23 @@
             </div>
         </div>
 
-        <!-- 4. شاشة الإعلان الموحدة (واجهة واحدة فقط بمربعين) -->
+        <!-- 4. شاشة الإعلان الموحدة (واجهة واحدة فقط بمربعين بدون زر تخطي) -->
         <div id="announcement-screen-1" class="screen">
-            <div class="announcement-card" onclick="skipAnnouncement1()">
+            <div class="announcement-card">
                 <h3 style="color: var(--primary); margin-bottom: 10px; font-size: 16px;">🏆 نتيجة المزاد</h3>
                 <div id="announcement-winner-box" class="announcement-sub-box winner-box"></div>
                 <div id="announcement-loser-box" class="announcement-sub-box loser-box"></div>
-                <p style="font-size: 9px; color: var(--accent); margin-top: 10px; font-weight: bold;">(اضغط للتخطي ⏩)</p>
+            </div>
+        </div>
+
+        <!-- 4.5. شاشة التهدئة قبل الجولة الجديدة (ثانيتين) -->
+        <div id="cooldown-screen" class="screen">
+            <div class="cooldown-card">
+                <div style="font-size: 36px; margin-bottom: 6px;">⏳🔥</div>
+                <h3 style="color: var(--accent); font-size: 16px; margin-bottom: 6px;">التقاط الأنفاس قبل الصفقة القادمة!</h3>
+                <p style="font-size: 12px; color: #c2ffd6; line-height: 1.5;">استعد جيداً.. نجم جديد في طريقه إلى منصة المزاد الآن ⚽✨</p>
+                <div class="cooldown-number-circle" id="cooldown-countdown-number">2</div>
+                <p style="font-size: 11px; color: var(--primary); font-weight: bold;">جهّز ميزانيتك للمنافسة 💰⚡</p>
             </div>
         </div>
 
@@ -1428,7 +1487,7 @@
             p1Squad: [], p2Squad: [], usedPlayerNamesInMatch: [], currentAuctionPlayerIndex: 1,
             highestBidAmount: 0, highestBidderIndex: null, hasAnyoneBidInThisRound: false,
             currentSelectedBid: 1, activePool: [],
-            timeLeft: 40, timerInterval: null, announcementTimer1: null,
+            timeLeft: 40, timerInterval: null, announcementTimer1: null, cooldownInterval: null,
             roomCloseTimer: 15, roomCloseInterval: null
         };
 
@@ -1833,6 +1892,32 @@
                 applySyncedSkipAction(data);
             } else if (data.type === 'CHAT_MESSAGE') {
                 receiveChatMessage(data.sender, data.text);
+            } else if (data.type === 'PLAYER_WITHDREW') {
+                stopRoundTimer();
+                stopCooldownTimer();
+                if (gameState.announcementTimer1) clearTimeout(gameState.announcementTimer1);
+                let withdrawnName = data.playerName || "الخصم";
+                alert(`🏳️ انسحب خصمك (${withdrawnName}) من المباراة!`);
+                resetToGamesHub();
+            }
+        }
+
+        function withdrawFromMatch() {
+            playSound('click');
+            if (!isGameInProgress) return;
+            if (confirm("هل أنت متأكد من الانسحاب من المباراة والعودة للواجهة الرئيسية؟")) {
+                stopRoundTimer();
+                stopCooldownTimer();
+                if (gameState.announcementTimer1) clearTimeout(gameState.announcementTimer1);
+                if (playMode === 'online') {
+                    sendOnlineData({
+                        type: 'PLAYER_WITHDREW',
+                        playerName: userSavedName
+                    });
+                }
+                setTimeout(() => {
+                    resetToGamesHub();
+                }, 100);
             }
         }
 
@@ -1927,6 +2012,7 @@
             gameState.reversedRoundsIndices = indices.slice(0, numReversed);
 
             isGameInProgress = true;
+            document.getElementById("top-withdraw-btn").style.display = "flex";
             lockBackNavigation();
             showScreen('auction-screen');
             checkAndTriggerWelcomePopups();
@@ -2077,7 +2163,7 @@
         function closeImportChoiceModal() { document.getElementById("import-choice-modal").style.display = "none"; }
         function triggerFileInput() { document.getElementById("import-choice-modal").style.display = "none"; document.getElementById("import-file-input").click(); }
         function openTextCodeImportModal() { playSound('click'); document.getElementById("import-choice-modal").style.display = "none"; document.getElementById("text-code-import-modal").style.display = "flex"; }
-        function closeTextCodeImportModal() { playSound('click'); document.getElementById("text-code-import-modal").style.display = "none"; }
+        function closeTextCodeImportModal() { document.getElementById("text-code-import-modal").style.display = "none"; }
         function openExportModal() { playSound('click'); document.getElementById("export-filename-input").value = "custom_players_" + new Date().toISOString().slice(0, 10); document.getElementById("export-filename-modal").style.display = "flex"; }
         function closeExportModal() { playSound('click'); document.getElementById("export-filename-modal").style.display = "none"; }
         
@@ -2228,6 +2314,7 @@
             }
 
             isGameInProgress = true;
+            document.getElementById("top-withdraw-btn").style.display = "flex";
             lockBackNavigation();
             updateBudgetTitlesAndNames();
             gameState.predefinedRounds = []; gameState.setupRefereeIndex = 0;
@@ -2273,6 +2360,34 @@
             gameState.setupRefereeIndex++; loadRefereeSetupStep();
         }
 
+        function stopCooldownTimer() {
+            if (gameState.cooldownInterval) {
+                clearInterval(gameState.cooldownInterval);
+                gameState.cooldownInterval = null;
+            }
+        }
+
+        function runCooldownBeforeNextRound(callback) {
+            stopCooldownTimer();
+            let count = 2;
+            let numEl = document.getElementById("cooldown-countdown-number");
+            if (numEl) numEl.innerText = count;
+            showScreen('cooldown-screen');
+            playSound('tick');
+
+            gameState.cooldownInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    if (numEl) numEl.innerText = count;
+                    playSound('tick');
+                } else {
+                    stopCooldownTimer();
+                    showScreen('auction-screen');
+                    if (callback) callback();
+                }
+            }, 1000);
+        }
+
         function loadNextAuctionRound() {
             chatMessages = [];
             renderChatMessages();
@@ -2280,6 +2395,7 @@
 
             if (gameState.currentRound > gameState.maxRounds) {
                 isGameInProgress = false;
+                document.getElementById("top-withdraw-btn").style.display = "none";
                 saveMatchToHistory(); 
                 preparePitchEndGameScreen(); 
                 showScreen('end-game-screen'); 
@@ -2347,9 +2463,15 @@
                 });
             }
 
-            if (checkActivePlayerBankruptStatus()) return;
-
-            setupAuctionScreenUI(); renderPermanentSquads(); startRoundTimer();
+            if (gameState.currentRound > 1) {
+                runCooldownBeforeNextRound(() => {
+                    if (checkActivePlayerBankruptStatus()) return;
+                    setupAuctionScreenUI(); renderPermanentSquads(); startRoundTimer();
+                });
+            } else {
+                if (checkActivePlayerBankruptStatus()) return;
+                setupAuctionScreenUI(); renderPermanentSquads(); startRoundTimer();
+            }
         }
 
         function applySyncedRoundData(data) {
@@ -2357,12 +2479,19 @@
                 remoteAdminRole = data.hostAdminRole;
             }
             isGameInProgress = true;
+            document.getElementById("top-withdraw-btn").style.display = "flex";
             lockBackNavigation();
             Object.assign(gameState, data.gameState);
             updateBudgetTitlesAndNames();
-            setupAuctionScreenUI(); renderPermanentSquads(); startRoundTimer();
-            showScreen('auction-screen');
-            checkAndTriggerWelcomePopups();
+            if (gameState.currentRound > 1) {
+                runCooldownBeforeNextRound(() => {
+                    setupAuctionScreenUI(); renderPermanentSquads(); startRoundTimer();
+                });
+            } else {
+                setupAuctionScreenUI(); renderPermanentSquads(); startRoundTimer();
+                showScreen('auction-screen');
+                checkAndTriggerWelcomePopups();
+            }
         }
 
         function checkActivePlayerBankruptStatus() {
@@ -2710,19 +2839,15 @@
             }, 2000);
         }
 
-        function skipAnnouncement1() { 
-            if (gameState.announcementTimer1) clearTimeout(gameState.announcementTimer1); 
-            finishAnnouncementAndNext(); 
-        }
-
         function finishAnnouncementAndNext() {
             if (playMode === 'online' && !onlineState.isHost) {
-                showScreen('auction-screen');
                 return;
             }
 
-            showScreen('auction-screen'); 
             gameState.currentRound++; 
+            if (gameState.currentRound > gameState.maxRounds) {
+                showScreen('auction-screen');
+            }
             loadNextAuctionRound();
         }
 
@@ -2887,6 +3012,8 @@
 
         function resetToGamesHub() {
             isGameInProgress = false;
+            stopCooldownTimer();
+            if (gameState.announcementTimer1) clearTimeout(gameState.announcementTimer1);
             if (onlineState.peer) {
                 try { onlineState.peer.destroy(); } catch(e) {}
             }
@@ -2896,6 +3023,7 @@
             hasWelcomedInThisRoom = false;
             stopRoomCloseTimer();
             document.getElementById("top-chat-btn").style.display = "none";
+            document.getElementById("top-withdraw-btn").style.display = "none";
             showScreen('games-hub-screen');
         }
     </script>
