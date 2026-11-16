@@ -951,7 +951,7 @@
     <div class="top-nav-bar">
         <div class="menu-icon" onclick="openHistoryModal()" title="سجل المباريات">☰ السجل</div>
         <div style="display: flex; gap: 6px; align-items: center;">
-            <div id="top-withdraw-btn" class="withdraw-icon-btn" onclick="withdrawFromMatch()" style="display: none;" title="الانسحاب من المباراة">🏳️ انسحاب</div>
+            <div id="top-withdraw-btn" class="withdraw-icon-btn" onclick="withdrawFromMatch()" style="display: none;" title="الانسحاب من المباراة">🚪 انسحاب</div>
             <div id="top-chat-btn" class="chat-icon-btn" onclick="openChatModal()" style="display: none;" title="دردشة الغرفة">💬 الشات</div>
             <div class="profile-icon" onclick="openProfileModal()" title="إعدادات البروفايل" id="top-profile-btn-wrapper" style="display: flex; align-items: center; gap: 5px;">
                 👤 <span id="top-profile-name-display">اللاعب</span>
@@ -1225,7 +1225,7 @@
             </div>
         </div>
 
-        <!-- 4. شاشة الإعلان الموحدة (واجهة واحدة فقط بمربعين بدون زر تخطي) -->
+        <!-- 4. شاشة الإعلان الموحدة (واجهة واحدة فقط بمربعين) -->
         <div id="announcement-screen-1" class="screen">
             <div class="announcement-card">
                 <h3 style="color: var(--primary); margin-bottom: 10px; font-size: 16px;">🏆 نتيجة المزاد</h3>
@@ -1897,7 +1897,7 @@
                 stopCooldownTimer();
                 if (gameState.announcementTimer1) clearTimeout(gameState.announcementTimer1);
                 let withdrawnName = data.playerName || "الخصم";
-                alert(`🏳️ انسحب خصمك (${withdrawnName}) من المباراة!`);
+                alert(`🚪 انسحب خصمك (${withdrawnName}) من المباراة!`);
                 resetToGamesHub();
             }
         }
