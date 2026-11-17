@@ -942,40 +942,6 @@
             to { transform: translateY(-6px); }
         }
 
-        /* تنسيقات الشات الجديدة والمنظمة والكيوت */
-        .chat-message-row {
-            display: flex;
-            margin-bottom: 8px;
-            width: 100%;
-        }
-        .chat-message-row.sent {
-            justify-content: flex-start; /* الاسم والرسالة من على اليمين */
-            text-align: right;
-        }
-        .chat-message-row.received {
-            justify-content: flex-end; /* الطرف الآخر من على الشمال */
-            text-align: left;
-        }
-        .chat-bubble-box {
-            background: rgba(0, 255, 135, 0.12);
-            border: 1.5px solid var(--primary);
-            border-radius: 12px;
-            padding: 8px 12px;
-            max-width: 80%;
-            word-break: break-word;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-        }
-        .chat-sender-name {
-            font-size: 10px;
-            color: var(--accent);
-            font-weight: bold;
-            margin-bottom: 2px;
-        }
-        .chat-text-content {
-            font-size: 12px;
-            color: #fff;
-        }
-
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
     </style>
@@ -1876,6 +1842,7 @@
             });
 
             onlineState.conn.on('close', () => {
+                // في حالة خروج المنافس من المتصفح، لا يتم غلق الغرفة وتستمر اللعبة بشكل طبيعي
                 if (!isGameInProgress) {
                     alert("⚠️ تم قطع الاتصال مع المنافس وغلق الغرفة.");
                     resetToGamesHub();
@@ -1913,6 +1880,9 @@
                 remoteAdminRole = data.hostAdminRole;
                 document.getElementById("top-chat-btn").style.display = "flex";
             } else if (data.type === 'SYNC_ROUND_DATA') {
+                chatMessages = [];
+                renderChatMessages();
+                document.getElementById("floating-chat-notification").style.display = "none";
                 applySyncedRoundData(data);
             } else if (data.type === 'SYNC_BID_ACTION') {
                 applySyncedBidAction(data);
@@ -1925,7 +1895,6 @@
             } else if (data.type === 'PLAYER_WITHDREW') {
                 stopRoundTimer();
                 stopCooldownTimer();
-                stopRoomCloseTimer();
                 if (gameState.announcementTimer1) clearTimeout(gameState.announcementTimer1);
                 let withdrawnName = data.playerName || "الخصم";
                 alert(`🚪 انسحب خصمك (${withdrawnName}) من المباراة!`);
@@ -1939,7 +1908,6 @@
             if (confirm("هل أنت متأكد من الانسحاب من المباراة والعودة للواجهة الرئيسية؟")) {
                 stopRoundTimer();
                 stopCooldownTimer();
-                stopRoomCloseTimer();
                 if (gameState.announcementTimer1) clearTimeout(gameState.announcementTimer1);
                 if (playMode === 'online') {
                     sendOnlineData({
@@ -1978,7 +1946,7 @@
             if (!text) return;
 
             let senderName = userSavedName;
-            appendChatMessage(senderName, text, true);
+            appendChatMessage(senderName, text);
             inputField.value = "";
 
             if (playMode === 'online') {
@@ -1992,15 +1960,15 @@
 
         function receiveChatMessage(sender, text) {
             playSound('tick');
-            appendChatMessage(sender, text, false);
+            appendChatMessage(sender, text);
 
             let bubble = document.getElementById("floating-chat-notification");
             document.getElementById("bubble-msg-text").innerText = `${sender}: ${text}`;
             bubble.style.display = "block";
         }
 
-        function appendChatMessage(sender, text, isSentByMe) {
-            chatMessages.push({ sender, text, isSentByMe });
+        function appendChatMessage(sender, text) {
+            chatMessages.push({ sender, text });
             renderChatMessages();
         }
 
@@ -2012,16 +1980,7 @@
             }
             box.innerHTML = "";
             chatMessages.forEach(m => {
-                // تحديد ما إذا كانت الرسالة مرسلة من اللاعب (تظهر من اليمين) أو مستقبلة (تظهر من الشمال)
-                let isMine = m.isSentByMe !== undefined ? m.isSentByMe : (m.sender === userSavedName);
-                let rowClass = isMine ? "sent" : "received";
-                box.innerHTML += `
-                    <div class="chat-message-row ${rowClass}">
-                        <div class="chat-bubble-box">
-                            <div class="chat-sender-name">${m.sender}</div>
-                            <div class="chat-text-content">${m.text}</div>
-                        </div>
-                    </div>`;
+                box.innerHTML += `<div style="margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;"><b>${m.sender}:</b> ${m.text}</div>`;
             });
             box.scrollTop = box.scrollHeight;
         }
@@ -2060,13 +2019,16 @@
             loadNextAuctionRound();
         }
 
+        // === قفل زر الرجوع عند بدء الجيم ===
         function lockBackNavigation() {
             history.pushState({ lockedGame: true }, "", window.location.href);
         }
 
+        // === تعديل دالة showScreen لدعم زر الرجوع والسحب الجانبي ===
         function showScreen(screenId, pushHistory = true) {
             playSound('click');
             stopRoundTimer();
+            stopRoomCloseTimer();
             
             if (pushHistory && !isGameInProgress && window.location.hash !== `#${screenId}`) {
                 history.pushState({ screenId: screenId }, "", `#${screenId}`);
@@ -2084,6 +2046,7 @@
             document.querySelectorAll('.modal').forEach(m => m.style.display = "none");
         }
 
+        // === استقبال أحداث زر الرجوع في المتصفح / الموبايل (أندرويد وآيفون) ===
         window.addEventListener('popstate', function(event) {
             if (isGameInProgress) {
                 history.pushState({ lockedGame: true }, "", window.location.href);
@@ -2426,6 +2389,10 @@
         }
 
         function loadNextAuctionRound() {
+            chatMessages = [];
+            renderChatMessages();
+            document.getElementById("floating-chat-notification").style.display = "none";
+
             if (gameState.currentRound > gameState.maxRounds) {
                 isGameInProgress = false;
                 document.getElementById("top-withdraw-btn").style.display = "none";
@@ -2514,22 +2481,8 @@
             isGameInProgress = true;
             document.getElementById("top-withdraw-btn").style.display = "flex";
             lockBackNavigation();
-            
-            // التحقق مما إذا كانت اللعبة انتهت في البيانات المزامنة
-            let wasEnded = (data.gameState.currentRound > data.gameState.maxRounds);
-            
             Object.assign(gameState, data.gameState);
             updateBudgetTitlesAndNames();
-
-            if (wasEnded) {
-                isGameInProgress = false;
-                document.getElementById("top-withdraw-btn").style.display = "none";
-                preparePitchEndGameScreen();
-                showScreen('end-game-screen');
-                startRoomCloseTimer();
-                return;
-            }
-
             if (gameState.currentRound > 1) {
                 runCooldownBeforeNextRound(() => {
                     setupAuctionScreenUI(); renderPermanentSquads(); startRoundTimer();
@@ -2592,10 +2545,6 @@
                 if (gameState.roomCloseTimer <= 0) {
                     stopRoomCloseTimer();
                     alert("⚠️ تم غلق الغرفة نهائياً!");
-                    // مسح الشات نهائياً عند غلق الغرفة نهائياً
-                    chatMessages = [];
-                    renderChatMessages();
-                    document.getElementById("floating-chat-notification").style.display = "none";
                     resetToGamesHub();
                 }
             }, 1000);
@@ -2891,13 +2840,13 @@
         }
 
         function finishAnnouncementAndNext() {
+            if (playMode === 'online' && !onlineState.isHost) {
+                return;
+            }
+
             gameState.currentRound++; 
-            if (playMode === 'online' && onlineState.isHost) {
-                sendOnlineData({
-                    type: 'SYNC_ROUND_DATA',
-                    gameState: gameState,
-                    hostAdminRole: adminRoleType
-                });
+            if (gameState.currentRound > gameState.maxRounds) {
+                showScreen('auction-screen');
             }
             loadNextAuctionRound();
         }
